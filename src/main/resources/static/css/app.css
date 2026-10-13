@@ -1,0 +1,10 @@
+.poster { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+.seat-grid { display: inline-block; }
+.seat-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+.seat-row .row-label { width: 24px; font-weight: 600; }
+.seat input { display: none; }
+.seat label { width: 36px; height: 32px; display: flex; align-items: center; justify-content: center;
+              border: 1px solid #198754; border-radius: 6px; font-size: 11px; cursor: pointer; }
+.seat input:checked + label { background: #198754; color: #fff; }
+.seat.sold label { background: #dee2e6; border-color: #adb5bd; color: #6c757d; cursor: not-allowed; }
+.screen { background: #343a40; color: #fff; text-align: center; border-radius: 4px; margin-bottom: 16px; }
