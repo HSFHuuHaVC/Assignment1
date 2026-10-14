@@ -1,4 +1,4 @@
-package com.fu.fu_cinema_ticket_system;
+package com.fu.cinema;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
