@@ -1,5 +1,6 @@
 package com.fu.cinema.repository;
 
+import com.fu.cinema.dto.RoomShowtimeCount;
 import com.fu.cinema.entity.Showtime;
 import com.fu.cinema.enums.ShowtimeStatus;
 import jakarta.persistence.LockModeType;
@@ -68,4 +69,17 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Showtime s WHERE s.showtimeId = :id")
     Optional<Showtime> findByIdForUpdate(@Param("id") Long id);
+
+    // ===== Q11: native SQL Server — số suất chiếu hôm nay theo phòng (dashboard) =====
+    @Query(value = """
+            SELECT r.room_name AS roomName, COUNT(s.showtime_id) AS showtimeCount
+            FROM rooms r
+            LEFT JOIN showtimes s
+                   ON s.room_id = r.room_id
+                  AND s.status = 'OPEN'
+                  AND CAST(s.start_time AS DATE) = CAST(GETDATE() AS DATE)
+            GROUP BY r.room_name
+            ORDER BY r.room_name
+            """, nativeQuery = true)
+    List<RoomShowtimeCount> countTodayShowtimesByRoom();
 }

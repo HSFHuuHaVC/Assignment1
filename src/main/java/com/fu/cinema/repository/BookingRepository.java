@@ -7,8 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -98,6 +100,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             """)
     List<Booking> findConfirmedInPeriod(@Param("from") LocalDateTime from,
                                         @Param("to") LocalDateTime to);
+
+    // ===== Q9: huỷ hàng loạt đơn của một suất chiếu (BR-09) =====
+    @Transactional
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE Booking b SET b.status = com.fu.cinema.enums.BookingStatus.CANCELLED
+            WHERE b.showtime.showtimeId = :showtimeId
+              AND b.status <> com.fu.cinema.enums.BookingStatus.CANCELLED
+            """)
+    int cancelAllByShowtime(@Param("showtimeId") Long showtimeId);
 
     // ===== Q12: khách đã xem phim chưa (BR-16) =====
     @Query("""
