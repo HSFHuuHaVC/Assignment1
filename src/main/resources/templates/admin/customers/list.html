@@ -29,6 +29,10 @@
                 <td><span class="badge" th:classappend="${c.account.status.name() == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'" th:text="${c.account.status}"></span></td>
                 <td class="text-end text-nowrap">
                     <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/customers/{id}/edit(id=${c.customerId})}">Sửa</a>
+                    <form class="d-inline" method="post" th:action="@{/admin/customers/{id}/lock(id=${c.customerId})}">
+                        <button type="submit" class="btn btn-sm btn-outline-warning"
+                                th:text="${c.account.status.name() == 'ACTIVE'} ? 'Khoá' : 'Mở khoá'"></button>
+                    </form>
                 </td>
             </tr>
             </tbody>

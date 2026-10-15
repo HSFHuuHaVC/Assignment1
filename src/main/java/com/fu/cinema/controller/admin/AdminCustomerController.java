@@ -69,6 +69,13 @@ public class AdminCustomerController {
         return "redirect:/admin/customers";
     }
 
+    @PostMapping("/{id}/lock")
+    public String toggleLock(@PathVariable Long id, RedirectAttributes flash) {
+        customerService.toggleLock(id);
+        flash.addFlashAttribute("success", "Đã cập nhật trạng thái tài khoản");
+        return "redirect:/admin/customers";
+    }
+
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         model.addAttribute("form", customerService.getForm(id));
