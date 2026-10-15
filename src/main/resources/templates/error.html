@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Có lỗi xảy ra')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-5 text-center">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="display-3" th:text="${status ?: 500}">Có lỗi xảy ra</h1>
+    <p class="lead">Không thể xử lý yêu cầu. Vui lòng thử lại.</p>
+    <a class="btn btn-primary" th:href="@{/}">Về trang chủ</a>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
