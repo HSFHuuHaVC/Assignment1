@@ -18,6 +18,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.access.AccessDeniedException;
@@ -144,8 +145,9 @@ class ErrorHandlingTests {
     @TestConfiguration(proxyBeanMethods = false)
     static class TestSecurity {
         @Bean
+        @Order(0)
         SecurityFilterChain errorFixtureSecurity(HttpSecurity http) throws Exception {
-            return http.csrf(csrf -> csrf.disable())
+            return http.securityMatcher("/__issue5/**").csrf(csrf -> csrf.disable())
                     .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()).build();
         }
     }

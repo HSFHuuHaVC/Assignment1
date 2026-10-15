@@ -6,7 +6,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-// Đưa người dùng hiện tại vào Model của mọi view (menu theo vai trò)
+/**
+ * Exposes the small session identity to every controller view for role-based menus.
+ * Reading a public page does not create a session or load an Account/password.
+ */
 @ControllerAdvice
 public class GlobalModelAttributes {
 
