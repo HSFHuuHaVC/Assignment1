@@ -1,6 +1,7 @@
 package com.fu.cinema.controller.customer;
 
 import com.fu.cinema.dto.ProfileForm;
+import com.fu.cinema.dto.ChangePasswordForm;
 import com.fu.cinema.dto.SessionUser;
 import com.fu.cinema.exception.BusinessException;
 import com.fu.cinema.service.CustomerService;
@@ -25,7 +26,8 @@ public class CustomerProfileController {
 
     @InitBinder("form")
     public void configureForm(WebDataBinder binder) {
-        binder.setAllowedFields("fullName", "email", "mobile", "birthday", "identityCard");
+        binder.setAllowedFields("fullName", "email", "mobile", "birthday", "identityCard",
+                "currentPassword", "newPassword", "confirmPassword");
         for (String field : new String[]{"fullName", "email", "mobile", "identityCard"}) {
             binder.registerCustomEditor(String.class, field, new StringTrimmerEditor(true));
         }
@@ -52,6 +54,28 @@ public class CustomerProfileController {
         session.setAttribute(SessionUtils.CURRENT_USER,
                 new SessionUser(user.getAccountId(), user.getCustomerId(), form.getFullName(), user.getRole()));
         flash.addFlashAttribute("success", "Đã cập nhật hồ sơ");
+        return "redirect:/customer/profile";
+    }
+
+    @GetMapping("/password")
+    public String password(HttpSession session, Model model) {
+        requireCustomer(session);
+        model.addAttribute("form", new ChangePasswordForm());
+        return "customer/password";
+    }
+
+    @PostMapping("/password")
+    public String changePassword(@Valid @ModelAttribute("form") ChangePasswordForm form, BindingResult binding,
+                                 HttpSession session, Model model, RedirectAttributes flash) {
+        SessionUser user = requireCustomer(session);
+        if (binding.hasErrors()) return "customer/password";
+        try {
+            customerService.changePassword(user.getAccountId(), form);
+        } catch (BusinessException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "customer/password";
+        }
+        flash.addFlashAttribute("success", "Đã đổi mật khẩu");
         return "redirect:/customer/profile";
     }
 

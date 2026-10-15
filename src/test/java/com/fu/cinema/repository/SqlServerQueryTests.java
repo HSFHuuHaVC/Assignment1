@@ -33,6 +33,8 @@ class SqlServerQueryTests {
     @Autowired EntityManager em;
     @Autowired ShowtimeRepository showtimes;
     @Autowired com.fu.cinema.service.BookingService bookingService;
+    @Autowired com.fu.cinema.service.AuthService authService;
+    @Autowired com.fu.cinema.service.CustomerService customerService;
 
     @DynamicPropertySource
     static void sqlServerProperties(DynamicPropertyRegistry properties) {
@@ -134,6 +136,30 @@ class SqlServerQueryTests {
         assertThat(bookingService.getDetailForCustomer(id, customerId).getStatus()).isEqualTo(BookingStatus.CANCELLED);
         assertThatThrownBy(() -> bookingService.getDetailForCustomer(otherId, customerId))
                 .isInstanceOf(com.fu.cinema.exception.ResourceNotFoundException.class);
+    }
+
+    @Test
+    void customerProfileAndPasswordChangeWorkOnSqlServerWithoutChangingUsername() {
+        var users = com.fu.cinema.CustomerProfileFixture.seed(authService);
+        var form = customerService.getProfile(users.an().getCustomerId());
+        form.setFullName("SQL Profile");
+        form.setEmail("contact@example.test");
+        form.setUsername("ignored@example.test");
+        customerService.updateProfile(users.an().getCustomerId(), form);
+        em.flush();
+        em.clear();
+        var saved = customerService.getProfile(users.an().getCustomerId());
+        assertThat(saved.getUsername()).isEqualTo("an@example.test");
+        assertThat(saved.getEmail()).isEqualTo("contact@example.test");
+        assertThat(saved.getFullName()).isEqualTo("SQL Profile");
+        var password = new com.fu.cinema.dto.ChangePasswordForm();
+        password.setCurrentPassword("Example@123");
+        password.setNewPassword("Changed@456");
+        password.setConfirmPassword("Changed@456");
+        customerService.changePassword(users.an().getAccountId(), password);
+        em.flush();
+        em.clear();
+        assertThat(authService.login("an@example.test", "Changed@456").getDisplayName()).isEqualTo("SQL Profile");
     }
 
     private void addShowtime(Movie movie, Room room, LocalDateTime start, ShowtimeStatus status) {
