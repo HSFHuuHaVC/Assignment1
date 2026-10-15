@@ -56,6 +56,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                    OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))
                    OR LOWER(c.email)    LIKE LOWER(CONCAT('%', :kw, '%'))
                    OR c.mobile          LIKE CONCAT('%', :kw, '%'))
+            ORDER BY b.bookingDate DESC, b.bookingId DESC
             """,
             countQuery = """
             SELECT COUNT(b) FROM Booking b JOIN b.customer c
