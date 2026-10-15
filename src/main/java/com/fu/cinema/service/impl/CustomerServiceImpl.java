@@ -156,6 +156,9 @@ public class CustomerServiceImpl implements CustomerService {
     public void updateProfile(Long customerId, ProfileForm form) {
         Customer customer = findWithAccount(customerId);
         if (form == null) throw new BusinessException("Vui lòng nhập thông tin khách hàng");
+        form.setFullName(ValidationUtils.blankToNull(form.getFullName()));
+        form.setMobile(ValidationUtils.blankToNull(form.getMobile()));
+        form.setIdentityCard(ValidationUtils.blankToNull(form.getIdentityCard()));
         form.setEmail(form.getEmail() == null ? null : form.getEmail().trim().toLowerCase(Locale.ROOT));
         validate(form);
         String email = form.getEmail();
@@ -163,11 +166,16 @@ public class CustomerServiceImpl implements CustomerService {
         if (ValidationUtils.age(form.getBirthday()) < 13) {
             throw new BusinessException("Khách hàng phải từ đủ 13 tuổi");
         }
-        customer.setFullName(form.getFullName().trim());
-        customer.setEmail(email);                            // username đăng nhập KHÔNG đổi
-        customer.setMobile(form.getMobile());
-        customer.setBirthday(form.getBirthday());
-        customer.setIdentityCard(form.getIdentityCard());
+        try {
+            customer.setFullName(form.getFullName());
+            customer.setEmail(email); // contact email only; login username stays unchanged
+            customer.setMobile(form.getMobile());
+            customer.setBirthday(form.getBirthday());
+            customer.setIdentityCard(form.getIdentityCard());
+            customerRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw duplicateConflict();
+        }
     }
 
     @Override

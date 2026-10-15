@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 @Profile("auth-fixture")
 public class AuthFixtureController {
-    @GetMapping({"/", "/admin", "/admin/movies", "/customer/profile"})
+    @GetMapping({"/", "/admin", "/admin/movies", "/customer/__auth-test"})
     public String destination() {
         return "auth-fixture";
     }

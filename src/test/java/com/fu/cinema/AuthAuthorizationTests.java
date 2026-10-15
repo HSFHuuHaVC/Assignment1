@@ -40,7 +40,7 @@ class AuthAuthorizationTests {
             mvc.perform(get(path).session(session(Role.ADMIN))).andExpect(status().isOk());
             mvc.perform(get(path).session(session(Role.CUSTOMER))).andExpect(status().isForbidden());
         }
-        for (String path : new String[]{"/customer/profile", "/customer/bookings"}) {
+        for (String path : new String[]{"/customer/__auth-test", "/customer/bookings"}) {
             mvc.perform(get(path).session(session(Role.CUSTOMER))).andExpect(status().isOk());
             mvc.perform(get(path).session(session(Role.ADMIN))).andExpect(status().isForbidden());
         }
