@@ -7,6 +7,14 @@
     <div th:replace="~{fragments/layout :: flash}"></div>
     <h1 class="display-3">403</h1>
     <p class="lead">Bạn không có quyền truy cập trang này.</p>
+    <p th:if="${currentUser != null}" class="text-muted">
+        Tài khoản hiện tại không được phép sử dụng chức năng này.
+        Vui lòng chọn chức năng phù hợp trong thanh menu.
+    </p>
+    <p th:if="${currentUser == null}" class="text-muted">
+        Vui lòng đăng nhập và thử lại.
+    </p>
+    <a th:if="${currentUser == null}" class="btn btn-outline-primary me-2" th:href="@{/login}">Đăng nhập</a>
     <a class="btn btn-primary" th:href="@{/}">Về trang chủ</a>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
