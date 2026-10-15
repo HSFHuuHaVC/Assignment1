@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Khách hàng')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4" style="max-width: 720px">
+    <h1 class="h3" th:text="${form.customerId == null} ? 'Thêm khách hàng' : 'Sửa khách hàng'"></h1>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form method="post" th:object="${form}" novalidate class="row g-3"
+          th:action="${form.customerId == null} ? @{/admin/customers/new} : @{/admin/customers/{id}/edit(id=${form.customerId})}">
+        <div class="col-12">
+            <label class="form-label" for="fullName">Họ tên</label>
+            <input type="text" class="form-control" th:field="*{fullName}" th:errorclass="is-invalid" maxlength="100" required>
+            <div class="invalid-feedback" th:errors="*{fullName}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="email">Email (tên đăng nhập)</label>
+            <input type="email" class="form-control" th:field="*{email}" th:errorclass="is-invalid" maxlength="100" required>
+            <div class="invalid-feedback" th:errors="*{email}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="mobile">Số điện thoại</label>
+            <input type="tel" class="form-control" th:field="*{mobile}" th:errorclass="is-invalid" maxlength="10" required>
+            <div class="invalid-feedback" th:errors="*{mobile}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="birthday">Ngày sinh</label>
+            <input type="date" class="form-control" th:field="*{birthday}" th:errorclass="is-invalid" required>
+            <div class="invalid-feedback" th:errors="*{birthday}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="identityCard">CCCD</label>
+            <input type="text" class="form-control" th:field="*{identityCard}" th:errorclass="is-invalid" maxlength="12" required>
+            <div class="invalid-feedback" th:errors="*{identityCard}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="password" th:text="${form.customerId == null} ? 'Mật khẩu' : 'Mật khẩu mới (để trống nếu không đổi)'"></label>
+            <input type="password" class="form-control" id="password" name="password" autocomplete="new-password"
+                   th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" aria-describedby="passwordHelp">
+            <div id="passwordHelp" class="form-text">Từ 8 ký tự, có chữ hoa, chữ thường và chữ số.</div>
+            <div class="invalid-feedback" th:errors="*{password}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="status">Trạng thái tài khoản</label>
+            <select class="form-select" th:field="*{status}" th:errorclass="is-invalid">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{status}"></div>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Lưu</button>
+            <a class="btn btn-secondary" th:href="@{/admin/customers}">Huỷ</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
