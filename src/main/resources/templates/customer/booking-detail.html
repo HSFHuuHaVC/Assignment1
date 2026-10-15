@@ -18,6 +18,7 @@
         </table>
     </div>
     <a class="btn btn-primary" th:href="@{/customer/showtimes/{id}/seats(id=${booking.showtime.showtimeId})}">Chọn thêm ghế</a>
+    <a class="btn btn-secondary" th:href="@{/customer/bookings}">Vé của tôi</a>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
