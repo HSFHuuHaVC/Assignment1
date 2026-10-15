@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.*;
 class SqlServerQueryTests {
     @Autowired EntityManager em;
     @Autowired ShowtimeRepository showtimes;
+    @Autowired com.fu.cinema.service.BookingService bookingService;
 
     @DynamicPropertySource
     static void sqlServerProperties(DynamicPropertyRegistry properties) {
@@ -87,6 +88,29 @@ class SqlServerQueryTests {
                 com.fu.cinema.dto.RoomShowtimeCount::getRoomName,
                 com.fu.cinema.dto.RoomShowtimeCount::getShowtimeCount));
         assertThat(counts).containsExactlyInAnyOrderEntriesOf(Map.of("Room 01", 2L, "Room 02", 1L, "Room 03", 0L));
+    }
+
+    @Test
+    void adminBookingSearchDetailAndStatusLockWorkOnSqlServer() {
+        var data = com.fu.cinema.AdminBookingFixture.seed(em, 3);
+        Long id = data.getFirst().getBookingId();
+        em.clear();
+        var result = bookingService.search(BookingStatus.PENDING, LocalDate.of(2026, 10, 15),
+                LocalDate.of(2026, 10, 15), "NGUYEN", 0, 10);
+        assertThat(result.getContent()).extracting(Booking::getBookingId).containsExactly(id);
+        var detail = bookingService.getDetail(id);
+        em.clear();
+        assertThat(detail.getShowtime().getRoom().getRoomName()).isEqualTo("Room 01");
+        assertThat(detail.getTickets()).hasSize(2);
+        bookingService.confirm(id);
+        em.flush();
+        em.clear();
+        assertThat(bookingService.getDetail(id).getStatus()).isEqualTo(BookingStatus.CONFIRMED);
+        em.clear();
+        bookingService.cancelByAdmin(id);
+        em.flush();
+        em.clear();
+        assertThat(bookingService.getDetail(id).getStatus()).isEqualTo(BookingStatus.CANCELLED);
     }
 
     private void addShowtime(Movie movie, Room room, LocalDateTime start, ShowtimeStatus status) {

@@ -158,7 +158,8 @@ public class BookingServiceImpl implements BookingService {
                 fromDate == null ? null : fromDate.atStartOfDay(),
                 toDate == null ? null : toDate.plusDays(1).atStartOfDay(),
                 ValidationUtils.blankToNull(keyword),
-                bookingPage(page, size));
+                // Q6 owns ORDER BY; repeated Pageable sort columns are rejected by SQL Server.
+                PageRequest.of(Math.max(page, 0), size <= 0 ? PageUtils.DEFAULT_SIZE : Math.min(size, 100)));
     }
 
     @Override
@@ -170,7 +171,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void confirm(Long bookingId) {
-        Booking booking = getDetail(bookingId);
+        Booking booking = findForStatusChange(bookingId);
         if (booking.getStatus() != BookingStatus.PENDING) {                               // BR-13
             throw new BusinessException("Chỉ xác nhận được đơn đang ở trạng thái PENDING");
         }
@@ -180,7 +181,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void cancelByAdmin(Long bookingId) {
-        Booking booking = getDetail(bookingId);
+        Booking booking = findForStatusChange(bookingId);
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new BusinessException("Đơn đã được huỷ trước đó");
         }
@@ -195,5 +196,10 @@ public class BookingServiceImpl implements BookingService {
     private Pageable bookingPage(int page, int size) {
         return PageRequest.of(Math.max(page, 0), size <= 0 ? PageUtils.DEFAULT_SIZE : Math.min(size, 100),
                 Sort.by("bookingDate", "bookingId").descending());
+    }
+
+    private Booking findForStatusChange(Long bookingId) {
+        return bookingRepository.findByIdForUpdate(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt vé", bookingId));
     }
 }

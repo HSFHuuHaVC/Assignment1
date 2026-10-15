@@ -3,6 +3,7 @@ package com.fu.cinema;
 import com.fu.cinema.dto.SessionUser;
 import com.fu.cinema.entity.Booking;
 import com.fu.cinema.enums.Role;
+import com.fu.cinema.enums.BookingStatus;
 import com.fu.cinema.util.SessionUtils;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:admin_booking_pages;MODE=MSSQLServer;DB_CLOSE_DELAY=-1")
@@ -96,6 +99,62 @@ class AdminBookingPagesTests {
         for (String url : new String[]{"/admin/bookings", "/admin/bookings/" + data.getFirst().getBookingId()}) {
             mvc.perform(get(url)).andExpect(redirectedUrl("/login"));
             mvc.perform(get(url).session(session(Role.CUSTOMER))).andExpect(status().isForbidden());
+        }
+    }
+
+    @Test
+    void actionButtonsFollowStatusAndCarryCsrf() throws Exception {
+        for (int i = 0; i < 3; i++) {
+            var booking = data.get(i);
+            String html = mvc.perform(get("/admin/bookings/" + booking.getBookingId()).session(session(Role.ADMIN)))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            if (booking.getStatus() == BookingStatus.PENDING) {
+                assertThat(html).contains("/" + booking.getBookingId() + "/confirm");
+            } else {
+                assertThat(html).doesNotContain("/" + booking.getBookingId() + "/confirm");
+            }
+            if (booking.getStatus() == BookingStatus.CANCELLED) {
+                assertThat(html).doesNotContain("/" + booking.getBookingId() + "/cancel");
+            } else {
+                assertThat(html).contains("/" + booking.getBookingId() + "/cancel", "name=\"_csrf\"");
+            }
+        }
+    }
+
+    @Test
+    void confirmUsesPrgAndRepeatedPostReturnsErrorToSameDetailWithoutReferer() throws Exception {
+        Long id = data.getFirst().getBookingId();
+        mvc.perform(post("/admin/bookings/" + id + "/confirm").session(session(Role.ADMIN)).with(csrf()))
+                .andExpect(redirectedUrl("/admin/bookings/" + id))
+                .andExpect(flash().attribute("success", "Đã xác nhận đơn #" + id));
+        mvc.perform(post("/admin/bookings/" + id + "/confirm").session(session(Role.ADMIN)).with(csrf()))
+                .andExpect(redirectedUrl("/admin/bookings/" + id))
+                .andExpect(flash().attribute("error", "Chỉ xác nhận được đơn đang ở trạng thái PENDING"));
+    }
+
+    @Test
+    void cancelWorksForPendingAndConfirmedAndRejectsRepeat() throws Exception {
+        for (int i = 0; i < 2; i++) {
+            Long id = data.get(i).getBookingId();
+            mvc.perform(post("/admin/bookings/" + id + "/cancel").session(session(Role.ADMIN)).with(csrf()))
+                    .andExpect(redirectedUrl("/admin/bookings/" + id))
+                    .andExpect(flash().attribute("success", "Đã huỷ đơn #" + id));
+            mvc.perform(post("/admin/bookings/" + id + "/cancel").session(session(Role.ADMIN)).with(csrf()))
+                    .andExpect(redirectedUrl("/admin/bookings/" + id))
+                    .andExpect(flash().attribute("error", "Đơn đã được huỷ trước đó"));
+        }
+    }
+
+    @Test
+    void writesRequireAdminPostCsrfAndExistingBooking() throws Exception {
+        for (String action : new String[]{"confirm", "cancel"}) {
+            String url = "/admin/bookings/" + data.getFirst().getBookingId() + "/" + action;
+            mvc.perform(get(url).session(session(Role.ADMIN))).andExpect(status().isMethodNotAllowed());
+            mvc.perform(post(url).session(session(Role.ADMIN))).andExpect(status().isForbidden());
+            mvc.perform(post(url).session(session(Role.CUSTOMER)).with(csrf())).andExpect(status().isForbidden());
+            mvc.perform(post(url).with(csrf())).andExpect(redirectedUrl("/login"));
+            mvc.perform(post("/admin/bookings/-1/" + action).session(session(Role.ADMIN)).with(csrf()))
+                    .andExpect(status().isNotFound());
         }
     }
 }
