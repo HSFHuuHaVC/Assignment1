@@ -33,6 +33,10 @@
                         <button type="submit" class="btn btn-sm btn-outline-warning"
                                 th:text="${c.account.status.name() == 'ACTIVE'} ? 'Khoá' : 'Mở khoá'"></button>
                     </form>
+                    <form class="d-inline" method="post" th:action="@{/admin/customers/{id}/delete(id=${c.customerId})}"
+                          onsubmit="return confirm('Xoá khách hàng này? Nếu đã có đơn đặt vé, tài khoản sẽ bị khoá.');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Xoá</button>
+                    </form>
                 </td>
             </tr>
             </tbody>

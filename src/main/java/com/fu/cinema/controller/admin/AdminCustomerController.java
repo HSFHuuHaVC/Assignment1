@@ -69,6 +69,15 @@ public class AdminCustomerController {
         return "redirect:/admin/customers";
     }
 
+    @PostMapping("/{id}/delete")
+    public String delete(@PathVariable Long id, RedirectAttributes flash) {
+        boolean deleted = customerService.delete(id);
+        flash.addFlashAttribute("success", deleted
+                ? "Đã xoá khách hàng"
+                : "Khách hàng đã có đơn đặt vé nên chỉ khoá tài khoản");
+        return "redirect:/admin/customers";
+    }
+
     @PostMapping("/{id}/lock")
     public String toggleLock(@PathVariable Long id, RedirectAttributes flash) {
         customerService.toggleLock(id);

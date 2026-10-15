@@ -83,4 +83,25 @@ class AdminCustomerActionsTests {
         mvc.perform(post(path).session(session(Role.CUSTOMER)).with(csrf())).andExpect(status().isForbidden());
         assertThat(service.getForm(customerId).getStatus()).isEqualTo(AccountStatus.ACTIVE);
     }
+
+    @Test
+    void deleteWithoutBookingsRemovesBothRowsAndRedirectsWithFlash() throws Exception {
+        Long accountId = auth.login("an@example.test", "Example@123").getAccountId();
+        mvc.perform(post("/admin/customers/" + customerId + "/delete").session(session(Role.ADMIN)).with(csrf()))
+                .andExpect(redirectedUrl("/admin/customers")).andExpect(flash().attribute("success", "Đã xoá khách hàng"));
+        assertThat(customers.findById(customerId)).isEmpty();
+        assertThat(accounts.findById(accountId)).isEmpty();
+    }
+
+    @Test
+    void deletionRequiresAdminPostCsrfAndExistingCustomer() throws Exception {
+        String path = "/admin/customers/" + customerId + "/delete";
+        mvc.perform(get(path).session(session(Role.ADMIN))).andExpect(status().isMethodNotAllowed());
+        mvc.perform(post(path).session(session(Role.ADMIN))).andExpect(status().isForbidden());
+        mvc.perform(post(path).with(csrf())).andExpect(redirectedUrl("/login"));
+        mvc.perform(post(path).session(session(Role.CUSTOMER)).with(csrf())).andExpect(status().isForbidden());
+        assertThat(customers.findById(customerId)).isPresent();
+        mvc.perform(post("/admin/customers/-1/delete").session(session(Role.ADMIN)).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
 }
