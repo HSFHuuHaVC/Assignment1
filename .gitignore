@@ -44,3 +44,6 @@ target/
 application-local.properties
 .env
 
+# Local-only tests and documentation
+/src/test/
+/docs/
