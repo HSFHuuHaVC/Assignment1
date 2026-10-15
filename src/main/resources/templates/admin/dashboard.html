@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h3 class="mb-4">Dashboard</h3>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card card-body"><div class="text-muted">Phim đang chiếu</div>
+            <div class="fs-2 fw-bold" th:text="${stats.showingMovies}"></div></div></div>
+        <div class="col-md-4"><div class="card card-body"><div class="text-muted">Khách hàng</div>
+            <div class="fs-2 fw-bold" th:text="${stats.customers}"></div></div></div>
+        <div class="col-md-4"><div class="card card-body"><div class="text-muted">Đơn chờ xác nhận</div>
+            <div class="fs-2 fw-bold" th:text="${stats.pendingBookings}"></div>
+            <a th:href="@{/admin/bookings(status='PENDING')}">Xem đơn -></a></div></div>
+    </div>
+    <h5>Suất chiếu hôm nay theo phòng</h5>
+    <table class="table table-sm w-auto">
+        <thead><tr><th>Phòng</th><th>Số suất</th></tr></thead>
+        <tbody><tr th:each="r : ${stats.todayShowtimesByRoom}">
+            <td th:text="${r.roomName}"></td><td th:text="${r.showtimeCount}"></td></tr></tbody>
+    </table>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
