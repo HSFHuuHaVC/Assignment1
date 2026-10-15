@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | FU Cinema'">FU Cinema</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<!-- Keep the solution's fragment API with a separate shared header and footer. -->
+<nav th:fragment="navbar" th:replace="~{fragments/header :: navbar}"></nav>
+
+<div th:fragment="flash">
+    <div th:if="${success != null and !#strings.isEmpty(success)}"
+         class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo"></button>
+    </div>
+    <div th:if="${error != null and !#strings.isEmpty(error)}"
+         class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo"></button>
+    </div>
+</div>
+
+<!-- url must contain the current filters but not the page parameter. -->
+<nav th:fragment="pagination(page, url)" th:if="${page != null and page.totalPages > 1}"
+     aria-label="Phân trang">
+    <ul class="pagination justify-content-center flex-wrap">
+        <li class="page-item" th:classappend="${page.first} ? 'disabled'">
+            <span th:if="${page.first}" class="page-link" aria-disabled="true">Trước</span>
+            <a th:unless="${page.first}" class="page-link" aria-label="Trang trước"
+               th:href="${url + (url.contains('?') ? '&' : '?') + 'page=' + (page.number - 1)}">Trước</a>
+        </li>
+        <li class="page-item" th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
+            th:classappend="${i == page.number} ? 'active'">
+            <span th:if="${i == page.number}" class="page-link" aria-current="page" th:text="${i + 1}">1</span>
+            <a th:unless="${i == page.number}" class="page-link"
+               th:href="${url + (url.contains('?') ? '&' : '?') + 'page=' + i}" th:text="${i + 1}">1</a>
+        </li>
+        <li class="page-item" th:classappend="${page.last} ? 'disabled'">
+            <span th:if="${page.last}" class="page-link" aria-disabled="true">Sau</span>
+            <a th:unless="${page.last}" class="page-link" aria-label="Trang sau"
+               th:href="${url + (url.contains('?') ? '&' : '?') + 'page=' + (page.number + 1)}">Sau</a>
+        </li>
+    </ul>
+    <p class="text-center text-muted small"
+       th:text="|Trang ${page.number + 1}/${page.totalPages} · ${page.totalElements} bản ghi|"></p>
+</nav>
+
+<footer th:fragment="footer" th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>
