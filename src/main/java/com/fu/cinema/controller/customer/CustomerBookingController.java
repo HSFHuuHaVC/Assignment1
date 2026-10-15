@@ -81,6 +81,17 @@ public class CustomerBookingController {
         return "customer/booking-detail";
     }
 
+    @PostMapping("/bookings/{id}/cancel")
+    public String cancel(@PathVariable Long id, HttpSession session, RedirectAttributes flash) {
+        try {
+            bookingService.cancelByCustomer(id, requireCustomerId(session));
+            flash.addFlashAttribute("success", "Đã huỷ đơn #" + id);
+        } catch (BusinessException ex) {
+            flash.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/customer/bookings/" + id;
+    }
+
     private Long requireCustomerId(HttpSession session) {
         Long id = SessionUtils.getCurrentCustomerId(session);
         if (id == null) throw new AccessDeniedException("Vui lòng đăng nhập bằng tài khoản khách hàng");

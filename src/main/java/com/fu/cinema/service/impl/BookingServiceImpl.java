@@ -140,7 +140,10 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public void cancelByCustomer(Long bookingId, Long customerId) {
-        Booking booking = getDetailForCustomer(bookingId, customerId);
+        Booking booking = findForStatusChange(bookingId);
+        if (!booking.getCustomer().getCustomerId().equals(customerId)) {
+            throw new ResourceNotFoundException("Đơn đặt vé", bookingId);
+        }
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new BusinessException("Đơn đã được huỷ trước đó");
         }
