@@ -1,6 +1,7 @@
 package com.fu.cinema.controller;
 
 import com.fu.cinema.dto.LoginForm;
+import com.fu.cinema.dto.RegisterForm;
 import com.fu.cinema.dto.SessionUser;
 import com.fu.cinema.exception.BusinessException;
 import com.fu.cinema.service.AuthService;
@@ -52,6 +53,33 @@ public class AuthController {
         } catch (BusinessException ex) {
             model.addAttribute("error", ex.getMessage());
             return "auth/login";
+        }
+    }
+
+    @GetMapping("/register")
+    public String registerPage(HttpServletRequest request, Model model) {
+        SessionUser user = SessionUtils.getCurrentUser(request.getSession(false));
+        if (user != null) {
+            return destination(user);
+        }
+        model.addAttribute("form", new RegisterForm());
+        return "auth/register";
+    }
+
+    @PostMapping("/register")
+    public String register(@Valid @ModelAttribute("form") RegisterForm form, BindingResult binding,
+                           HttpServletRequest request, Model model, RedirectAttributes flash) {
+        if (binding.hasErrors()) {
+            return "auth/register";
+        }
+        try {
+            SessionUser user = authService.register(form);
+            startSession(request, user);
+            flash.addFlashAttribute("success", "Đăng ký thành công");
+            return "redirect:/";
+        } catch (BusinessException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "auth/register";
         }
     }
 

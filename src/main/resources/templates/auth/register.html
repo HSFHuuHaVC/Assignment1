@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Đăng ký')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4" style="max-width: 600px">
+    <h1 class="h3 mb-3">Đăng ký tài khoản</h1>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form th:action="@{/register}" th:object="${form}" method="post">
+        <div class="mb-3">
+            <label for="fullName" class="form-label">Họ và tên</label>
+            <input type="text" th:field="*{fullName}" class="form-control"
+                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'" autocomplete="name" maxlength="100" required>
+            <div class="invalid-feedback" th:errors="*{fullName}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" th:field="*{email}" class="form-control"
+                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" autocomplete="email" maxlength="100" required>
+            <div class="invalid-feedback" th:errors="*{email}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="mobile" class="form-label">Số điện thoại</label>
+            <input type="tel" th:field="*{mobile}" class="form-control"
+                   th:classappend="${#fields.hasErrors('mobile')} ? 'is-invalid'" autocomplete="tel" maxlength="10" required>
+            <div class="invalid-feedback" th:errors="*{mobile}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="birthday" class="form-label">Ngày sinh</label>
+            <input type="date" th:field="*{birthday}" class="form-control"
+                   th:classappend="${#fields.hasErrors('birthday')} ? 'is-invalid'" autocomplete="bday" required>
+            <div class="invalid-feedback" th:errors="*{birthday}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="identityCard" class="form-label">CCCD</label>
+            <input type="text" th:field="*{identityCard}" class="form-control"
+                   th:classappend="${#fields.hasErrors('identityCard')} ? 'is-invalid'" autocomplete="off" maxlength="12" required>
+            <div class="invalid-feedback" th:errors="*{identityCard}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Mật khẩu</label>
+            <input type="password" name="password" id="password" class="form-control"
+                   th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" autocomplete="new-password" required>
+            <div class="invalid-feedback" th:errors="*{password}"></div>
+        </div>
+        <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Nhập lại mật khẩu</label>
+            <input type="password" name="confirmPassword" id="confirmPassword" class="form-control"
+                   th:classappend="${#fields.hasErrors('confirmPassword')} ? 'is-invalid'" autocomplete="new-password" required>
+            <div class="invalid-feedback" th:errors="*{confirmPassword}"></div>
+        </div>
+        <p class="small text-muted">Từ đủ 13 tuổi. Mật khẩu từ 8 ký tự, gồm chữ hoa, chữ thường và chữ số.</p>
+        <button type="submit" class="btn btn-primary w-100">Đăng ký</button>
+    </form>
+    <p class="mt-3 text-center">Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a></p>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
