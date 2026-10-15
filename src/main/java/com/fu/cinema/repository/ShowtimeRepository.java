@@ -2,10 +2,12 @@ package com.fu.cinema.repository;
 
 import com.fu.cinema.entity.Showtime;
 import com.fu.cinema.enums.ShowtimeStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -47,4 +49,23 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
 
     @Query("SELECT s FROM Showtime s JOIN FETCH s.movie JOIN FETCH s.room WHERE s.showtimeId = :id")
     Optional<Showtime> findDetailById(@Param("id") Long id);
+
+    // ===== Q3: suất chiếu chồng giờ trong cùng phòng (BR-08) =====
+    @Query("""
+            SELECT s FROM Showtime s JOIN FETCH s.movie
+            WHERE s.room.roomId = :roomId
+              AND s.status <> com.fu.cinema.enums.ShowtimeStatus.CANCELLED
+              AND s.startTime < :end
+              AND s.endTime > :start
+              AND (:excludeId IS NULL OR s.showtimeId <> :excludeId)
+            """)
+    List<Showtime> findOverlapping(@Param("roomId") Long roomId,
+                                   @Param("start") LocalDateTime start,
+                                   @Param("end") LocalDateTime end,
+                                   @Param("excludeId") Long excludeId);
+
+    // Khoá dòng suất chiếu khi đặt vé → 2 người đặt cùng lúc sẽ được xử lý tuần tự
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Showtime s WHERE s.showtimeId = :id")
+    Optional<Showtime> findByIdForUpdate(@Param("id") Long id);
 }
