@@ -102,6 +102,17 @@ class AuthServiceTests {
     }
 
     @Test
+    void lockedAccountCannotLoginEvenWithCorrectPassword() {
+        Account account = account(Role.CUSTOMER);
+        account.setStatus(AccountStatus.LOCKED);
+        when(accounts.findByUsername(account.getUsername())).thenReturn(Optional.of(account));
+        when(encoder.matches("Example@123", account.getPassword())).thenReturn(true);
+        assertThatThrownBy(() -> auth.login(account.getUsername(), "Example@123"))
+                .isInstanceOf(BusinessException.class).hasMessageContaining("bị khóa");
+        verifyNoInteractions(customers);
+    }
+
+    @Test
     void loginFormDoesNotPrintPasswords() {
         LoginForm form = new LoginForm();
         form.setPassword("private-password");
