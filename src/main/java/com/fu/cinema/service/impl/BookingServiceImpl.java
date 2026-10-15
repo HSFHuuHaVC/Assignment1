@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -121,6 +122,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Page<Booking> findByCustomer(Long customerId, BookingStatus status, int page, int size) {
+        if (customerId == null) {
+            throw new AccessDeniedException("Vui lòng đăng nhập bằng tài khoản khách hàng");
+        }
         Pageable pageable = bookingPage(page, size);
         return status == null
                 ? bookingRepository.findByCustomer_CustomerId(customerId, pageable)
@@ -129,21 +133,15 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking getDetailForCustomer(Long bookingId, Long customerId) {
-        Booking booking = getDetail(bookingId);
-        if (!booking.getCustomer().getCustomerId().equals(customerId)) {
-            // Không tiết lộ đơn của người khác có tồn tại hay không → trả 404
-            throw new ResourceNotFoundException("Đơn đặt vé", bookingId);
-        }
-        return booking;
+        return bookingRepository.findDetailByIdAndCustomerId(bookingId, customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt vé", bookingId));
     }
 
     @Override
     @Transactional
     public void cancelByCustomer(Long bookingId, Long customerId) {
-        Booking booking = findForStatusChange(bookingId);
-        if (!booking.getCustomer().getCustomerId().equals(customerId)) {
-            throw new ResourceNotFoundException("Đơn đặt vé", bookingId);
-        }
+        Booking booking = bookingRepository.findByIdAndCustomerIdForUpdate(bookingId, customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn đặt vé", bookingId));
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new BusinessException("Đơn đã được huỷ trước đó");
         }

@@ -113,6 +113,29 @@ class SqlServerQueryTests {
         assertThat(bookingService.getDetail(id).getStatus()).isEqualTo(BookingStatus.CANCELLED);
     }
 
+    @Test
+    void customerHistoryAndOwnedCancellationWorkOnSqlServer() {
+        var data = com.fu.cinema.AdminBookingFixture.seed(em, 3);
+        Long id = data.getFirst().getBookingId();
+        Long customerId = data.getFirst().getCustomer().getCustomerId();
+        Long otherId = data.get(1).getBookingId();
+        em.clear();
+        var history = bookingService.findByCustomer(customerId, null, 0, 10);
+        assertThat(history.getTotalElements()).isEqualTo(2);
+        assertThat(bookingService.findByCustomer(customerId, BookingStatus.PENDING, 0, 10).getTotalElements())
+                .isEqualTo(1);
+        var detail = bookingService.getDetailForCustomer(id, customerId);
+        em.clear();
+        assertThat(detail.getShowtime().getRoom().getRoomName()).isEqualTo("Room 01");
+        assertThat(detail.getTickets()).hasSize(2);
+        bookingService.cancelByCustomer(id, customerId);
+        em.flush();
+        em.clear();
+        assertThat(bookingService.getDetailForCustomer(id, customerId).getStatus()).isEqualTo(BookingStatus.CANCELLED);
+        assertThatThrownBy(() -> bookingService.getDetailForCustomer(otherId, customerId))
+                .isInstanceOf(com.fu.cinema.exception.ResourceNotFoundException.class);
+    }
+
     private void addShowtime(Movie movie, Room room, LocalDateTime start, ShowtimeStatus status) {
         Showtime showtime = new Showtime();
         showtime.setMovie(movie);
