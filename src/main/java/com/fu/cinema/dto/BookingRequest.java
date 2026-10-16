@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 public class BookingRequest {
 
-    @NotNull
+    @NotNull(message = "Vui lòng chọn suất chiếu")
     private Long showtimeId;
 
     @NotEmpty(message = "Vui lòng chọn ít nhất 1 ghế")

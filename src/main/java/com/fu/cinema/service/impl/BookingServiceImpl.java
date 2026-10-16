@@ -51,6 +51,9 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional                                               // BR-12: Booking + Ticket trong 1 transaction
     public Booking create(Long customerId, BookingRequest request) {
+        if (customerId == null) {
+            throw new BusinessException("Vui lòng đăng nhập bằng tài khoản khách hàng");
+        }
         if (request == null || request.getShowtimeId() == null) {
             throw new BusinessException("Vui lòng chọn suất chiếu");
         }
@@ -113,7 +116,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setTotalAmount(showtime.getTicketPrice().multiply(BigDecimal.valueOf(seats.size())));
         seats.forEach(seat -> booking.addTicket(new Ticket(showtime, seat, showtime.getTicketPrice())));
-        return bookingRepository.save(booking);
+        return bookingRepository.saveAndFlush(booking);
     }
 
     @Override
