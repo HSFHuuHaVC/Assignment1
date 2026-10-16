@@ -140,6 +140,17 @@ Database gồm `accounts`, `customers`, `genres`, `movies`, `rooms`, `showtimes`
 
 Các query Q1–Q12 nằm trong repository: tìm kiếm/phân trang, trùng lịch, ghế đã bán, chi tiết đơn, doanh thu, hủy hàng loạt, điểm đánh giá và thống kê dashboard. Đơn `CANCELLED` không giữ ghế. Báo cáo chỉ tính đơn `CONFIRMED` theo ngày đặt. Customer chỉ được hủy đơn của mình trước giờ chiếu ít nhất 2 giờ.
 
+## Thành viên và phân công
+
+Điền họ tên và MSSV trước khi nộp bài; các ô đang để trống theo yêu cầu của nhóm.
+
+| Họ tên | MSSV | GitHub | Vai trò | Phạm vi phụ trách |
+|---|---|---|---|---|
+| | | [chuong123445](https://github.com/chuong123445) | Leader | I01–I03, I05–I07, I12, I14–I16, I19: nền tảng, dữ liệu/query, service contract, xác thực, khách hàng, đơn Admin, đặt vé, lịch sử, hồ sơ, tài liệu và phát hành |
+| | | [huuha205](https://github.com/huuha205) | Thành viên | I04, I08–I11, I13, I17–I18: seed, thể loại/phim, phòng/suất chiếu/dashboard, trang chủ, doanh thu và đánh giá |
+
+I01–I19 là mã kế hoạch; số issue thật trên GitHub có thể khác. Reviewer là người còn lại; tác giả không tự approve PR của mình.
+
 ## Ảnh minh họa
 
 Ảnh được chụp trên bản demo với dữ liệu thử, không chứa mật khẩu SQL Server. Tên tài khoản, số lượng đơn và ngày trong ảnh có thể khác database trên máy người đọc.
