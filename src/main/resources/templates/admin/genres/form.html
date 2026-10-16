@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Thể loại')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4" style="max-width: 640px">
+    <h3 th:text="${form.genreId == null} ? 'Thêm thể loại' : 'Sửa thể loại'"></h3>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form method="post" th:object="${form}" novalidate class="mt-3"
+          th:action="${form.genreId == null} ? @{/admin/genres/new} : @{/admin/genres/{id}/edit(id=${form.genreId})}">
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tên thể loại</label>
+            <input class="form-control" th:field="*{genreName}" th:errorclass="is-invalid" placeholder="Nhập tên thể loại">
+            <div class="invalid-feedback" th:errors="*{genreName}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mô tả</label>
+            <textarea class="form-control" rows="3" th:field="*{description}" th:errorclass="is-invalid" placeholder="Nhập mô tả thể loại"></textarea>
+            <div class="invalid-feedback" th:errors="*{description}"></div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Lưu</button>
+            <a class="btn btn-secondary" th:href="@{/admin/genres}">Huỷ</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
