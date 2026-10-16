@@ -25,6 +25,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.bookingId = :id")
     Optional<Booking> findByIdForUpdate(@Param("id") Long id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM Booking b WHERE b.bookingId = :id AND b.customer.customerId = :customerId")
+    Optional<Booking> findByIdAndCustomerIdForUpdate(@Param("id") Long id, @Param("customerId") Long customerId);
+
     // ===== Derived query =====
     boolean existsByCustomer_CustomerId(Long customerId);
 
@@ -49,6 +53,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             WHERE b.bookingId = :id
             """)
     Optional<Booking> findDetailById(@Param("id") Long id);
+
+    @Query("""
+            SELECT DISTINCT b FROM Booking b
+            JOIN FETCH b.customer c
+            JOIN FETCH b.showtime s
+            JOIN FETCH s.movie
+            JOIN FETCH s.room
+            LEFT JOIN FETCH b.tickets
+            WHERE b.bookingId = :id AND c.customerId = :customerId
+            """)
+    Optional<Booking> findDetailByIdAndCustomerId(@Param("id") Long id, @Param("customerId") Long customerId);
 
     // ===== Q6: lọc đơn cho Admin (trạng thái, khoảng ngày, từ khoá khách hàng) =====
     @Query(value = """

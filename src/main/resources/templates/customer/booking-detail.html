@@ -17,7 +17,15 @@
             <tr><th scope="row">Tổng tiền</th><td class="fw-bold" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'"></td></tr>
         </table>
     </div>
-    <a class="btn btn-primary" th:href="@{/customer/showtimes/{id}/seats(id=${booking.showtime.showtimeId})}">Chọn thêm ghế</a>
+    <div class="d-flex flex-wrap gap-2">
+        <form th:if="${booking.status.name() != 'CANCELLED'}" method="post"
+              th:action="@{/customer/bookings/{id}/cancel(id=${booking.bookingId})}"
+              onsubmit="return confirm('Bạn chắc chắn muốn huỷ đơn này?');" class="d-inline">
+            <button class="btn btn-outline-danger" type="submit">Huỷ đơn</button>
+        </form>
+        <a class="btn btn-primary" th:href="@{/customer/showtimes/{id}/seats(id=${booking.showtime.showtimeId})}">Chọn thêm ghế</a>
+        <a class="btn btn-secondary" th:href="@{/customer/bookings}">Vé của tôi</a>
+    </div>
 </main>
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 </body>
