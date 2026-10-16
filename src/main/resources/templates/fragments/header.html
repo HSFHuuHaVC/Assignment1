@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<body>
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Điều hướng chính">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">FU Cinema</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Mở menu điều hướng">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" th:href="@{/}">Phim</a></li>
+
+                <th:block th:if="${currentUser != null and currentUser.admin}">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin}">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/customers}">Khách hàng</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/genres}">Thể loại</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/movies}">Quản lý phim</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/rooms}">Phòng chiếu</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/showtimes}">Suất chiếu</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/bookings}">Đơn đặt vé</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/admin/reports}">Báo cáo</a></li>
+                </th:block>
+
+                <th:block th:if="${currentUser != null and currentUser.customer}">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/customer/bookings}">Vé của tôi</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/customer/profile}">Hồ sơ</a></li>
+                </th:block>
+            </ul>
+
+            <div class="account-menu d-flex align-items-center gap-2">
+                <th:block th:if="${currentUser == null}">
+                    <a class="btn btn-outline-light btn-sm" th:href="@{/login}">Đăng nhập</a>
+                    <a class="btn btn-warning btn-sm" th:href="@{/register}">Đăng ký</a>
+                </th:block>
+                <th:block th:if="${currentUser != null}">
+                    <span class="text-light small" th:text="'Xin chào, ' + ${currentUser.displayName}">Xin chào</span>
+                    <form th:action="@{/logout}" method="post" class="m-0">
+                        <button class="btn btn-outline-light btn-sm" type="submit">Đăng xuất</button>
+                    </form>
+                </th:block>
+            </div>
+        </div>
+    </div>
+</nav>
+</body>
+</html>

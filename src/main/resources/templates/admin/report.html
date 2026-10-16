@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Báo cáo')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <h3 class="mb-3">Báo cáo doanh thu bán vé</h3>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form class="row g-2 mb-4" method="get" th:action="@{/admin/reports}">
+        <div class="col-md-4"><label class="form-label">Từ ngày</label>
+            <input type="date" class="form-control" name="startDate" th:value="${startDate}"></div>
+        <div class="col-md-4"><label class="form-label">Đến ngày</label>
+            <input type="date" class="form-control" name="endDate" th:value="${endDate}"></div>
+        <div class="col-md-4 d-grid align-self-end"><button class="btn btn-primary">Xem báo cáo</button></div>
+    </form>
+
+    <th:block th:if="${report != null}">
+        <p th:if="${report.empty}" class="text-muted">Không có dữ liệu trong khoảng thời gian đã chọn.</p>
+        <th:block th:unless="${report.empty}">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4"><div class="card card-body"><div class="text-muted">Tổng số đơn</div>
+                    <div class="fs-3 fw-bold" th:text="${report.totalBookings}"></div></div></div>
+                <div class="col-md-4"><div class="card card-body"><div class="text-muted">Tổng số vé</div>
+                    <div class="fs-3 fw-bold" th:text="${report.totalTickets}"></div></div></div>
+                <div class="col-md-4"><div class="card card-body"><div class="text-muted">Tổng doanh thu</div>
+                    <div class="fs-3 fw-bold" th:text="${#numbers.formatDecimal(report.totalRevenue, 0, 'COMMA', 0, 'POINT')} + 'đ'"></div></div></div>
+            </div>
+
+            <h5>(a) Doanh thu theo phim (giảm dần)</h5>
+            <table class="table table-sm">
+                <thead class="table-light"><tr><th>#</th><th>Phim</th><th>Số vé</th><th>Doanh thu</th></tr></thead>
+                <tbody><tr th:each="r, st : ${report.revenueByMovie}">
+                    <td th:text="${st.count}"></td>
+                    <td th:text="${r.title}"></td>
+                    <td th:text="${r.ticketCount}"></td>
+                    <td th:text="${#numbers.formatDecimal(r.revenue, 0, 'COMMA', 0, 'POINT')} + 'đ'"></td>
+                </tr></tbody>
+            </table>
+
+            <h5 class="mt-4">(b) Đơn đã xác nhận trong kỳ (mới nhất trước)</h5>
+            <table class="table table-sm">
+                <thead class="table-light"><tr><th>#</th><th>Ngày đặt</th><th>Khách hàng</th><th>Phim</th><th>Tổng tiền</th></tr></thead>
+                <tbody><tr th:each="b : ${report.bookings}">
+                    <td><a th:href="@{/admin/bookings/{id}(id=${b.bookingId})}" th:text="${b.bookingId}"></a></td>
+                    <td th:text="${#temporals.format(b.bookingDate, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${b.customer.fullName}"></td>
+                    <td th:text="${b.showtime.movie.title}"></td>
+                    <td th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'"></td>
+                </tr></tbody>
+            </table>
+        </th:block>
+    </th:block>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

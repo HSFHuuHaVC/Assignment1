@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Suất chiếu')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4" style="max-width: 720px">
+    <h3 th:text="${form.showtimeId == null} ? 'Thêm suất chiếu' : 'Sửa suất chiếu'"></h3>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form method="post" th:object="${form}" novalidate class="row g-3"
+          th:action="${form.showtimeId == null} ? @{/admin/showtimes/new} : @{/admin/showtimes/{id}/edit(id=${form.showtimeId})}">
+        <div class="col-md-6">
+            <label class="form-label">Phim</label>
+            <select class="form-select" th:field="*{movieId}" th:errorclass="is-invalid">
+                <option value="">-- Chọn --</option>
+                <option th:each="m : ${movies}" th:value="${m.movieId}" th:text="|${m.title} (${m.duration}')|"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{movieId}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Phòng (đang hoạt động)</label>
+            <select class="form-select" th:field="*{roomId}" th:errorclass="is-invalid">
+                <option value="">-- Chọn --</option>
+                <option th:each="r : ${rooms}" th:value="${r.roomId}" th:text="|${r.roomName} (${r.roomType.label})|"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{roomId}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Bắt đầu</label>
+            <input type="datetime-local" class="form-control" th:field="*{startTime}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{startTime}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Kết thúc <small class="text-muted">(để trống = thời lượng + 15 phút)</small></label>
+            <input type="datetime-local" class="form-control" th:field="*{endTime}">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Giá vé (đ)</label>
+            <input type="number" class="form-control" th:field="*{ticketPrice}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{ticketPrice}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" th:field="*{status}">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+            </select>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary">Lưu</button>
+            <a class="btn btn-secondary" th:href="@{/admin/showtimes}">Huỷ</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Suất chiếu')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="d-flex justify-content-between mb-3 align-items-center">
+        <h3>Suất chiếu</h3>
+        <a class="btn btn-primary" th:href="@{/admin/showtimes/new}">+ Thêm suất chiếu</a>
+    </div>
+    <form class="row g-2 mb-3" method="get" th:action="@{/admin/showtimes}">
+        <div class="col-md-3"><input type="date" class="form-control" name="date" th:value="${date}"></div>
+        <div class="col-md-4">
+            <select class="form-select" name="movieId">
+                <option value="">Tất cả phim</option>
+                <option th:each="m : ${movies}" th:value="${m.movieId}" th:text="${m.title}" th:selected="${m.movieId == movieId}"></option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" name="roomId">
+                <option value="">Tất cả phòng</option>
+                <option th:each="r : ${rooms}" th:value="${r.roomId}" th:text="${r.roomName}" th:selected="${r.roomId == roomId}"></option>
+            </select>
+        </div>
+        <div class="col-md-2 d-grid"><button class="btn btn-outline-primary">Lọc</button></div>
+    </form>
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Phim</th>
+                <th>Phòng</th>
+                <th>Bắt đầu</th>
+                <th>Kết thúc</th>
+                <th>Giá vé</th>
+                <th>Trạng thái</th>
+                <th class="text-end">Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${showtimes.empty}"><td colspan="7" class="text-center text-muted">Không có dữ liệu</td></tr>
+        <tr th:each="s : ${showtimes.content}">
+            <td class="fw-bold" th:text="${s.movie.title}"></td>
+            <td th:text="${s.room.roomName}"></td>
+            <td th:text="${#temporals.format(s.startTime, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${#temporals.format(s.endTime, 'HH:mm')}"></td>
+            <td th:text="${#numbers.formatDecimal(s.ticketPrice, 0, 'COMMA', 0, 'POINT')} + 'đ'"></td>
+            <td>
+                <span class="badge" th:classappend="${s.status.name() == 'OPEN' ? 'bg-success' : 'bg-secondary'}" th:text="${s.status}"></span>
+            </td>
+            <td class="text-end text-nowrap">
+                <a class="btn btn-sm btn-outline-secondary" th:href="@{/admin/showtimes/{id}/edit(id=${s.showtimeId})}">Sửa</a>
+                <form class="d-inline" method="post" th:action="@{/admin/showtimes/{id}/delete(id=${s.showtimeId})}"
+                      onsubmit="return confirm('Xoá suất chiếu? Nếu đã có đơn, suất chiếu và các đơn sẽ bị huỷ.');">
+                    <button class="btn btn-sm btn-outline-danger">Xoá</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div th:replace="~{fragments/layout :: pagination(${showtimes}, ${pageUrl})}"></div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
