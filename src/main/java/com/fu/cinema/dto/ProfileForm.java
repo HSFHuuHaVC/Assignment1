@@ -17,6 +17,7 @@ public class ProfileForm {
 
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
+    @Size(max = 100, message = "Email tối đa 100 ký tự")
     private String email;
 
     @NotBlank(message = "Số điện thoại không được để trống")
