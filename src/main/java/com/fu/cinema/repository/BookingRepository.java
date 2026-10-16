@@ -3,11 +3,13 @@ package com.fu.cinema.repository;
 import com.fu.cinema.dto.MovieRevenueDTO;
 import com.fu.cinema.entity.Booking;
 import com.fu.cinema.enums.BookingStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    /** Serialize status transitions so a concurrent confirmation cannot revive a cancelled booking. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT b FROM Booking b WHERE b.bookingId = :id")
+    Optional<Booking> findByIdForUpdate(@Param("id") Long id);
 
     // ===== Derived query =====
     boolean existsByCustomer_CustomerId(Long customerId);
@@ -56,6 +63,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                    OR LOWER(c.fullName) LIKE LOWER(CONCAT('%', :kw, '%'))
                    OR LOWER(c.email)    LIKE LOWER(CONCAT('%', :kw, '%'))
                    OR c.mobile          LIKE CONCAT('%', :kw, '%'))
+            ORDER BY b.bookingDate DESC, b.bookingId DESC
             """,
             countQuery = """
             SELECT COUNT(b) FROM Booking b JOIN b.customer c
