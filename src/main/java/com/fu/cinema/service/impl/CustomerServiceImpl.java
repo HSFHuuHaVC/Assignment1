@@ -14,10 +14,16 @@ import com.fu.cinema.repository.BookingRepository;
 import com.fu.cinema.repository.CustomerRepository;
 import com.fu.cinema.service.CustomerService;
 import com.fu.cinema.util.ValidationUtils;
+import com.fu.cinema.util.PageUtils;
+import jakarta.validation.Validator;
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,13 +37,15 @@ public class CustomerServiceImpl implements CustomerService {
     private final AccountRepository accountRepository;
     private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Validator validator;
 
     // ================= Admin =================
 
     @Override
     public Page<Customer> search(String keyword, int page, int size) {
         return customerRepository.search(ValidationUtils.blankToNull(keyword),
-                PageRequest.of(Math.max(page, 0), size, Sort.by("fullName")));
+                PageRequest.of(Math.max(page, 0), size <= 0 ? PageUtils.DEFAULT_SIZE : Math.min(size, 100),
+                        Sort.by("fullName", "customerId")));
     }
 
     @Override
@@ -57,35 +65,46 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public void create(CustomerForm form) {
+        validateCustomerForm(form);
         if (form.getPassword() == null || form.getPassword().isBlank()) {
             throw new BusinessException("Mật khẩu không được để trống khi tạo khách hàng");
         }
-        String email = form.getEmail().trim().toLowerCase();
+        String email = form.getEmail();
         checkDuplicates(email, form.getMobile(), form.getIdentityCard(), null, null);
         checkAge(form);
 
-        Account account = accountRepository.save(new Account(
-                email, passwordEncoder.encode(form.getPassword()), Role.CUSTOMER, form.getStatus()));
-        Customer customer = new Customer();
-        customer.setAccount(account);
-        copy(form, customer, email);
-        customerRepository.save(customer);
+        try {
+            Account account = accountRepository.save(new Account(
+                    email, passwordEncoder.encode(form.getPassword()), Role.CUSTOMER, form.getStatus()));
+            Customer customer = new Customer();
+            customer.setAccount(account);
+            copy(form, customer, email);
+            customerRepository.saveAndFlush(customer);
+        } catch (DataIntegrityViolationException ex) {
+            throw duplicateConflict();
+        }
     }
 
     @Override
     @Transactional
     public void update(Long customerId, CustomerForm form) {
         Customer customer = findWithAccount(customerId);
+        validateCustomerForm(form);
         Account account = customer.getAccount();
-        String email = form.getEmail().trim().toLowerCase();
+        String email = form.getEmail();
         checkDuplicates(email, form.getMobile(), form.getIdentityCard(), customerId, account.getAccountId());
         checkAge(form);
 
-        copy(form, customer, email);
-        account.setUsername(email);
-        account.setStatus(form.getStatus());
-        if (form.getPassword() != null && !form.getPassword().isBlank()) {
-            account.setPassword(passwordEncoder.encode(form.getPassword()));
+        try {
+            copy(form, customer, email);
+            account.setUsername(email);
+            account.setStatus(form.getStatus());
+            if (form.getPassword() != null && !form.getPassword().isBlank()) {
+                account.setPassword(passwordEncoder.encode(form.getPassword()));
+            }
+            customerRepository.flush(); // detect unique conflicts inside this transaction
+        } catch (DataIntegrityViolationException ex) {
+            throw duplicateConflict();
         }
     }
 
@@ -93,13 +112,15 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public boolean delete(Long customerId) {
         Customer customer = findWithAccount(customerId);
-        if (bookingRepository.existsByCustomer_CustomerId(customerId)) {
+        if (bookingRepository.existsByCustomer_CustomerId(customerId)) {          // BR-04
             customer.getAccount().setStatus(AccountStatus.LOCKED);
             return false;
         }
         Account account = customer.getAccount();
-        customerRepository.delete(customer);
+        customerRepository.delete(customer);                 // xoá bảng con (giữ FK) trước
+        customerRepository.flush();
         accountRepository.delete(account);
+        accountRepository.flush();
         return true;
     }
 
@@ -134,16 +155,27 @@ public class CustomerServiceImpl implements CustomerService {
     @Transactional
     public void updateProfile(Long customerId, ProfileForm form) {
         Customer customer = findWithAccount(customerId);
-        String email = form.getEmail().trim().toLowerCase();
+        if (form == null) throw new BusinessException("Vui lòng nhập thông tin khách hàng");
+        form.setFullName(ValidationUtils.blankToNull(form.getFullName()));
+        form.setMobile(ValidationUtils.blankToNull(form.getMobile()));
+        form.setIdentityCard(ValidationUtils.blankToNull(form.getIdentityCard()));
+        form.setEmail(form.getEmail() == null ? null : form.getEmail().trim().toLowerCase(Locale.ROOT));
+        validate(form);
+        String email = form.getEmail();
         checkDuplicates(email, form.getMobile(), form.getIdentityCard(), customerId, customer.getAccount().getAccountId());
         if (ValidationUtils.age(form.getBirthday()) < 13) {
             throw new BusinessException("Khách hàng phải từ đủ 13 tuổi");
         }
-        customer.setFullName(form.getFullName().trim());
-        customer.setEmail(email);
-        customer.setMobile(form.getMobile());
-        customer.setBirthday(form.getBirthday());
-        customer.setIdentityCard(form.getIdentityCard());
+        try {
+            customer.setFullName(form.getFullName());
+            customer.setEmail(email); // contact email only; login username stays unchanged
+            customer.setMobile(form.getMobile());
+            customer.setBirthday(form.getBirthday());
+            customer.setIdentityCard(form.getIdentityCard());
+            customerRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw duplicateConflict();
+        }
     }
 
     @Override
@@ -151,7 +183,11 @@ public class CustomerServiceImpl implements CustomerService {
     public void changePassword(Long accountId, ChangePasswordForm form) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tài khoản", accountId));
-        if (!passwordEncoder.matches(form.getCurrentPassword(), account.getPassword())) {
+        if (form == null) throw new BusinessException("Vui lòng nhập thông tin mật khẩu");
+        validate(form);
+        checkPasswordLength(form.getNewPassword());
+        if (form.getCurrentPassword().getBytes(StandardCharsets.UTF_8).length > 72
+                || !passwordEncoder.matches(form.getCurrentPassword(), account.getPassword())) {
             throw new BusinessException("Mật khẩu hiện tại không đúng");
         }
         if (!form.getNewPassword().equals(form.getConfirmPassword())) {
@@ -161,6 +197,32 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     // ================= helpers =================
+
+    private void validateCustomerForm(CustomerForm form) {
+        if (form == null) throw new BusinessException("Vui lòng nhập thông tin khách hàng");
+        form.setFullName(ValidationUtils.blankToNull(form.getFullName()));
+        form.setEmail(form.getEmail() == null ? null : form.getEmail().trim().toLowerCase(Locale.ROOT));
+        form.setMobile(ValidationUtils.blankToNull(form.getMobile()));
+        form.setIdentityCard(ValidationUtils.blankToNull(form.getIdentityCard()));
+        validate(form);
+        checkPasswordLength(form.getPassword());
+    }
+
+    private void validate(Object form) {
+        validator.validate(form).stream()
+                .sorted(Comparator.comparing(value -> value.getPropertyPath().toString()))
+                .findFirst().ifPresent(value -> { throw new BusinessException(value.getMessage()); });
+    }
+
+    private void checkPasswordLength(String password) {
+        if (password != null && password.getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new BusinessException("Mật khẩu quá dài. Vui lòng chọn mật khẩu ngắn hơn");
+        }
+    }
+
+    private BusinessException duplicateConflict() {
+        return new BusinessException("Thông tin khách hàng đã được sử dụng. Vui lòng kiểm tra lại");
+    }
 
     private Customer findWithAccount(Long customerId) {
         return customerRepository.findWithAccountById(customerId)

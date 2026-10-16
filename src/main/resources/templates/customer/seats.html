@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Chọn ghế')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <section th:if="${seatMap != null}" th:with="s=${seatMap.showtime}">
+        <h1 class="h3" th:text="${s.movie.title}"></h1>
+        <p class="text-muted" th:text="|${#temporals.format(s.startTime, 'dd/MM/yyyy HH:mm')} · ${s.room.roomName} (${s.room.roomType.label}) · ${#numbers.formatDecimal(s.ticketPrice, 0, 'COMMA', 0, 'POINT')}đ/vé|"></p>
+        <form method="post" th:action="@{/customer/bookings}">
+            <input type="hidden" name="showtimeId" th:value="${s.showtimeId}">
+            <div class="screen py-1">MÀN HÌNH</div>
+            <div class="seat-map-scroll" role="region" aria-label="Sơ đồ ghế, cuộn ngang để xem thêm" tabindex="0">
+                <div class="seat-grid">
+                    <div class="seat-row" th:each="row : ${seatMap.rowLabels}">
+                        <span class="row-label" th:text="${row}"></span>
+                        <span th:each="n : ${#numbers.sequence(1, seatMap.seatsPerRow)}"
+                              th:with="code=${row + n}" class="seat" th:classappend="${seatMap.isSold(code)} ? 'sold'">
+                            <input type="checkbox" name="seatCodes" th:id="${code}" th:value="${code}" th:disabled="${seatMap.isSold(code)}">
+                            <label th:for="${code}"><span th:text="${code}"></span><span class="visually-hidden" th:if="${seatMap.isSold(code)}"> (đã bán)</span></label>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-3 small text-muted">Ô xám: ghế đã bán · Ô xanh: ghế đang chọn · Tối đa 8 ghế mỗi đơn</p>
+            <p aria-live="polite">Đã chọn: <strong id="count">0</strong> ghế · Tạm tính: <strong id="total">0</strong>đ</p>
+            <button type="submit" class="btn btn-success">Đặt vé</button>
+            <a class="btn btn-secondary" th:href="@{/movies/{id}(id=${s.movie.movieId})}">Quay lại</a>
+        </form>
+    </section>
+    <a th:if="${seatMap == null}" class="btn btn-secondary" th:href="@{/}">Về trang chủ</a>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<script th:if="${seatMap != null}" th:inline="javascript">
+    const price = /*[[${seatMap.showtime.ticketPrice}]]*/ 0;
+    document.querySelectorAll('input[name=seatCodes]').forEach(cb => cb.addEventListener('change', () => {
+        const n = document.querySelectorAll('input[name=seatCodes]:checked').length;
+        document.getElementById('count').textContent = n;
+        document.getElementById('total').textContent = (n * price).toLocaleString('vi-VN');
+    }));
+</script>
+</body>
+</html>

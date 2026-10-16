@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Đơn đặt vé')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <h1 class="h3 mb-3">Đơn đặt vé</h1>
+    <form class="row g-2 mb-3" method="get" th:action="@{/admin/bookings}">
+        <div class="col-md-2">
+            <label for="bookingStatus" class="visually-hidden">Trạng thái</label>
+            <select id="bookingStatus" class="form-select" name="status">
+                <option value="">Trạng thái</option>
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == status}"></option>
+            </select>
+        </div>
+        <div class="col-md-2"><input type="date" class="form-control" id="fromDate" name="from" aria-label="Từ ngày" th:value="${from}" title="Từ ngày"></div>
+        <div class="col-md-2"><input type="date" class="form-control" id="toDate" name="to" aria-label="Đến ngày" th:value="${to}" title="Đến ngày"></div>
+        <div class="col-md-4"><input class="form-control" id="bookingKeyword" name="kw" aria-label="Từ khóa khách hàng" th:value="${kw}" placeholder="Tên, email, SĐT khách hàng"></div>
+        <div class="col-md-2 d-grid"><button class="btn btn-outline-primary">Lọc</button></div>
+    </form>
+    <div class="table-responsive" role="region" aria-label="Danh sách đơn đặt vé" tabindex="0">
+    <table class="table table-hover align-middle">
+        <thead class="table-light"><tr><th scope="col">#</th><th scope="col">Ngày đặt</th><th scope="col">Khách hàng</th><th scope="col">Phim</th><th scope="col">Suất chiếu</th><th scope="col">Tổng tiền</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+        <tbody>
+        <tr th:if="${bookings.empty}"><td colspan="8" class="text-center text-muted">Không có dữ liệu</td></tr>
+        <tr th:each="b : ${bookings.content}">
+            <td th:text="${b.bookingId}"></td>
+            <td th:text="${#temporals.format(b.bookingDate, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${b.customer.fullName}"></td>
+            <td th:text="${b.showtime.movie.title}"></td>
+            <td th:text="${#temporals.format(b.showtime.startTime, 'dd/MM HH:mm')}"></td>
+            <td th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + 'đ'"></td>
+            <td><span class="badge" th:text="${b.status}"
+                      th:classappend="${b.status.name() == 'CONFIRMED'} ? 'bg-success' : (${b.status.name() == 'PENDING'} ? 'bg-warning text-dark' : 'bg-secondary')"></span></td>
+            <td><a class="btn btn-sm btn-outline-primary" th:href="@{/admin/bookings/{id}(id=${b.bookingId})}">Chi tiết</a></td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+    <div th:replace="~{fragments/layout :: pagination(${bookings}, ${pageUrl})}"></div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
