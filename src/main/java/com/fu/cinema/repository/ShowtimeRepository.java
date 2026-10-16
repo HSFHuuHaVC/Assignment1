@@ -60,6 +60,7 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
               AND s.endTime > :start
               AND (:excludeId IS NULL OR s.showtimeId <> :excludeId)
             """)
+    // Q3: Kiểm tra trùng lịch phòng chiếu (BR-08, loại trừ chính suất đang sửa)
     List<Showtime> findOverlapping(@Param("roomId") Long roomId,
                                    @Param("start") LocalDateTime start,
                                    @Param("end") LocalDateTime end,

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Phòng chiếu')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4" style="max-width: 640px">
+    <h3 th:text="${form.roomId == null} ? 'Thêm phòng' : 'Sửa phòng'"></h3>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form method="post" th:object="${form}" novalidate class="row g-3"
+          th:action="${form.roomId == null} ? @{/admin/rooms/new} : @{/admin/rooms/{id}/edit(id=${form.roomId})}">
+        <div class="col-md-6">
+            <label class="form-label">Tên phòng</label>
+            <input class="form-control" th:field="*{roomName}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{roomName}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Loại phòng</label>
+            <select class="form-select" th:field="*{roomType}" th:errorclass="is-invalid">
+                <option value="">-- Chọn --</option>
+                <option th:each="t : ${roomTypes}" th:value="${t}" th:text="${t.label}"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{roomType}"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Số hàng (A–Z)</label>
+            <input type="number" class="form-control" th:field="*{totalRows}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{totalRows}"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Ghế mỗi hàng</label>
+            <input type="number" class="form-control" th:field="*{seatsPerRow}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{seatsPerRow}"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" th:field="*{status}">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+            </select>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary">Lưu</button>
+            <a class="btn btn-secondary" th:href="@{/admin/rooms}">Huỷ</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

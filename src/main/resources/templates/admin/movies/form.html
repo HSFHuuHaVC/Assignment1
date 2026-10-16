@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Phim')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4" style="max-width: 820px">
+    <h3 th:text="${form.movieId == null} ? 'Thêm phim' : 'Sửa phim'"></h3>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <form method="post" th:object="${form}" novalidate class="row g-3"
+          th:action="${form.movieId == null} ? @{/admin/movies/new} : @{/admin/movies/{id}/edit(id=${form.movieId})}">
+        <div class="col-md-8">
+            <label class="form-label">Tên phim</label>
+            <input class="form-control" th:field="*{title}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{title}"></div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Thể loại</label>
+            <select class="form-select" th:field="*{genreId}" th:errorclass="is-invalid">
+                <option value="">-- Chọn --</option>
+                <option th:each="g : ${genres}" th:value="${g.genreId}" th:text="${g.genreName}"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{genreId}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Đạo diễn</label>
+            <input class="form-control" th:field="*{director}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{director}"></div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Thời lượng (phút)</label>
+            <input type="number" class="form-control" th:field="*{duration}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{duration}"></div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Khởi chiếu</label>
+            <input type="date" class="form-control" th:field="*{releaseDate}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{releaseDate}"></div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Độ tuổi</label>
+            <select class="form-select" th:field="*{ageRating}" th:errorclass="is-invalid">
+                <option value="">-- Chọn --</option>
+                <option th:each="a : ${ageRatings}" th:value="${a}" th:text="${a}"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{ageRating}"></div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" th:field="*{status}">
+                <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="col-form-label">Poster URL</label>
+            <input class="form-control" th:field="*{posterUrl}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{posterUrl}"></div>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Mô tả</label>
+            <textarea class="form-control" rows="4" th:field="*{description}" th:errorclass="is-invalid"></textarea>
+            <div class="invalid-feedback" th:errors="*{description}"></div>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary">Lưu</button>
+            <a class="btn btn-secondary" th:href="@{/admin/movies}">Huỷ</a>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

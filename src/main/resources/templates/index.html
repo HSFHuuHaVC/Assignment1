@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head('Phim')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <form class="row g-2 mb-4" th:action="@{/movies}" method="get">
+        <div class="col-md-6">
+            <input class="form-control" name="kw" th:value="${kw}" placeholder="Tìm tên phim...">
+        </div>
+        <div class="col-md-4">
+            <select class="form-select" name="genreId">
+                <option value="">-- Tất cả thể loại --</option>
+                <option th:each="g : ${genres}" th:value="${g.genreId}" th:text="${g.genreName}"
+                        th:selected="${g.genreId == genreId}"></option>
+            </select>
+        </div>
+        <div class="col-md-2 d-grid"><button class="btn btn-primary">Tìm</button></div>
+    </form>
+
+    <p th:if="${movies.empty}" class="text-muted">Không tìm thấy phim phù hợp.</p>
+
+    <div class="row row-cols-2 row-cols-md-4 g-4">
+        <div class="col" th:each="m : ${movies.content}">
+            <div class="card h-100">
+                <img class="card-img-top poster" th:src="${m.posterUrl}" th:alt="${m.title}">
+                <div class="card-body">
+                    <span class="badge"
+                          th:classappend="${m.status.name() == 'SHOWING'} ? 'bg-success' : 'bg-secondary'"
+                          th:text="${m.status.name() == 'SHOWING'} ? 'Đang chiếu' : 'Sắp chiếu'"></span>
+                    <span class="badge bg-danger" th:text="${m.ageRating}"></span>
+                    <h6 class="card-title mt-2" th:text="${m.title}"></h6>
+                    <p class="small text-muted mb-0" th:text="|${m.genre.genreName} · ${m.duration} phút|"></p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <a class="btn btn-outline-primary btn-sm w-100" th:href="@{/movies/{id}(id=${m.movieId})}">Chi tiết & đặt vé</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4" th:replace="~{fragments/layout :: pagination(${movies}, ${pageUrl})}"></div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

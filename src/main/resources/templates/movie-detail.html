@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{fragments/layout :: head(${movie.title})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="row g-4">
+        <div class="col-md-3"><img class="poster rounded" th:src="${movie.posterUrl}" th:alt="${movie.title}"></div>
+        <div class="col-md-9">
+            <h2 th:text="${movie.title}"></h2>
+            <p>
+                <span class="badge bg-danger" th:text="${movie.ageRating}"></span>
+                <span class="badge bg-info text-dark" th:text="${movie.genre.genreName}"></span>
+                <span class="text-muted" th:text="|${movie.duration} phút · Khởi chiếu ${#temporals.format(movie.releaseDate, 'dd/MM/yyyy')}|"></span>
+            </p>
+            <p><strong>Đạo diễn:</strong> <span th:text="${movie.director}"></span></p>
+            <p th:text="${movie.description}"></p>
+            <p>
+                <strong>Đánh giá:</strong>
+                <span th:if="${rating.total > 0}"
+                      th:text="|${#numbers.formatDecimal(rating.average, 1, 1)}/5 ⭐ (${rating.total} lượt)|"></span>
+                <span th:if="${rating.total == 0}" class="text-muted">Chưa có đánh giá</span>
+            </p>
+        </div>
+    </div>
+
+    <h4 class="mt-4">Lịch chiếu</h4>
+    <p th:if="${showtimesByDate.isEmpty()}" class="text-muted">Chưa có suất chiếu.</p>
+    <div th:each="entry : ${showtimesByDate}" class="mb-3">
+        <h6 th:text="${#temporals.format(entry.key, 'EEEE, dd/MM/yyyy')}"></h6>
+        <a th:each="s : ${entry.value}" class="btn btn-outline-success me-2 mb-2"
+           th:href="@{/customer/showtimes/{id}/seats(id=${s.showtimeId})}"
+           th:text="|${#temporals.format(s.startTime, 'HH:mm')} · ${s.room.roomName}|"></a>
+    </div>
+
+    <h4 class="mt-4">Đánh giá của khán giả</h4>
+    <form th:if="${canReview}" th:action="@{/customer/movies/{id}/review(id=${movie.movieId})}"
+          th:object="${reviewForm}" method="post" class="card card-body mb-3">
+        <div class="row g-2">
+            <div class="col-md-2">
+                <select class="form-select" th:field="*{rating}">
+                    <option th:each="i : ${#numbers.sequence(5, 1, -1)}" th:value="${i}" th:text="|${i} ⭐|"></option>
+                </select>
+            </div>
+            <div class="col-md-8"><input class="form-control" th:field="*{comment}" placeholder="Nhận xét của bạn..."></div>
+            <div class="col-md-2 d-grid"><button class="btn btn-primary">Gửi đánh giá</button></div>
+        </div>
+    </form>
+    <div th:each="r : ${reviews}" class="border-bottom py-2">
+        <strong th:text="${r.customer.fullName}"></strong>
+        <span th:text="|${r.rating} ⭐|"></span>
+        <small class="text-muted" th:text="${#temporals.format(r.reviewDate, 'dd/MM/yyyy')}"></small>
+        <div th:text="${r.comment}"></div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
