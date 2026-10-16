@@ -21,7 +21,7 @@ public class ShowtimeForm {
     private Long roomId;
 
     @NotNull(message = "Giờ bắt đầu không được để trống")
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")          // khớp định dạng của <input type="datetime-local">
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime startTime;
 
     // Để trống → hệ thống tự tính = StartTime + Duration + 15 phút dọn phòng
