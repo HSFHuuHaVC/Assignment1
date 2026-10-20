@@ -44,6 +44,13 @@ target/
 application-local.properties
 .env
 
-# Local-only tests and documentation
-/src/test/
-/docs/
+# Keep existing tests/docs local; publish only the TODO 32 smoke test and screenshots.
+/src/test/**
+!/src/test/java/
+!/src/test/java/com/
+!/src/test/java/com/fu/
+!/src/test/java/com/fu/cinema/
+!/src/test/java/com/fu/cinema/FuCinemaTicketSystemApplicationTests.java
+/docs/**
+!/docs/images/
+!/docs/images/*.png
