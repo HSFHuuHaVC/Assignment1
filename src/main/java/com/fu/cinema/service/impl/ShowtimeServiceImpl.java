@@ -81,6 +81,11 @@ public class ShowtimeServiceImpl implements ShowtimeService {
             throw new BusinessException("Suất chiếu đã có người đặt vé: không được đổi phim hoặc phòng");
         }
         apply(form, showtime, showtimeId);
+        if (showtime.getStatus() == ShowtimeStatus.CANCELLED) {
+            // The edit form must cancel bookings just like the delete action (BR-09).
+            // Q9 flushes the showtime change before clearing the persistence context.
+            bookingRepository.cancelAllByShowtime(showtimeId);
+        }
     }
 
     @Override
@@ -127,7 +132,9 @@ public class ShowtimeServiceImpl implements ShowtimeService {
     private void apply(ShowtimeForm form, Showtime showtime, Long excludeId) {
         Movie movie = movieRepository.findById(form.getMovieId())
                 .orElseThrow(() -> new ResourceNotFoundException("Phim", form.getMovieId()));
-        Room room = roomRepository.findById(form.getRoomId())
+        // Lock the existing room, including when it has no showtimes yet. Both create
+        // and update keep this lock through the overlap query and transaction commit.
+        Room room = roomRepository.findByIdForUpdate(form.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Phòng chiếu", form.getRoomId()));
 
         if (movie.getStatus() == MovieStatus.STOPPED) {
