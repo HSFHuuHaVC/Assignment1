@@ -16,7 +16,7 @@ Website quản lý rạp chiếu phim và đặt vé trực tuyến cho Assignme
 | Spring Security | Giữ CSRF và security headers; form đăng nhập và phân quyền do ứng dụng xử lý |
 | Build | Maven Wrapper đi kèm repository |
 
-Bootstrap và ảnh poster lấy từ Internet. Khi không có kết nối, ứng dụng vẫn có thể khởi động nhưng giao diện/ảnh có thể không tải đủ.
+Bootstrap tải từ CDN nên cần Internet để hiển thị đầy đủ giao diện. Sáu poster mẫu được lưu trong `src/main/resources/static/images/posters/` và dùng đường dẫn nội bộ.
 
 ## Cài đặt trên Windows PowerShell
 

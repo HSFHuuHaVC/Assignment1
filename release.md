@@ -1,9 +1,9 @@
 # I19 Nghiệm thu và chuẩn bị phát hành
-Issue GitHub: #46 · TODO 32 · ngày kiểm tra: 16/10/2026.
+Issue GitHub: #48 · TODO 32 · ngày kiểm tra: 16/10/2026.
 
 ## Kết quả đã thực hiện
-- Nhánh tài liệu: `docs/19-readme`; chưa push.
-- Ba commit theo solution: `0569b8a` smoke test; `7e607f2` README/tài khoản/ảnh; `4da2046` phân công. Cả ba dùng `Refs #46`.
+- Nhánh tài liệu `docs/19-readme` đã push và merge qua PR #49 vào develop ngày 20/10/2026 tại `57f42e9`.
+- Ba commit theo solution: `0569b8a` smoke test; `7e607f2` README/tài khoản/ảnh; `4da2046` phân công. Các commit cũ ghi `Refs #46`; kiểm tra GitHub xác nhận I19 là #48, còn #46 là issue poster. Các bước phát hành mới tham chiếu #48.
 - `mvn clean verify` đạt trên worktree sạch và trên bản clone cục bộ sạch; một smoke test contextLoads, không failure/error, profile test/H2, không cần SQL Server.
 - Bản clone là clone từ repo cục bộ của nhánh chưa push; chưa thể xác nhận clone nhánh đó trực tiếp từ GitHub.
 - Nghiệm thu giao diện/nghiệp vụ bằng Chromium/Playwright trên SQL Server riêng `FUCinemaI19Acceptance20261016`, collation UTF-8, từ code `3d10621`. Database dự án cá nhân không bị dùng để tạo/sửa/xóa dữ liệu thử.
@@ -14,12 +14,20 @@ Issue GitHub: #46 · TODO 32 · ngày kiểm tra: 16/10/2026.
 - Họ tên/MSSV để trống theo yêu cầu. Không sửa định dạng hoặc tự chèn ảnh vào chỗ trống của báo cáo Word.
 
 ## Điều kiện chưa hoàn tất trước release
-- Hai PR sửa TODO 23 đã merge vào main, nhưng chưa có trong develop; cần PR đồng bộ main → develop trước PR tài liệu.
+- Đã kiểm tra `main` tại `3d10621` là tổ tiên của develop tại `57f42e9`; hai sửa lỗi TODO 23 đã có trong develop.
 - Bản sửa Unicode của 5 entity vẫn là thay đổi chưa commit trong working tree; không nằm trong ba commit I19 vì yêu cầu trước đó là không commit. README hướng dẫn database mới dùng UTF-8, đã được nghiệm thu riêng. Muốn phát hành cả mapping NVARCHAR cần xử lý riêng các thay đổi này và chạy lại kiểm tra trên SHA phát hành.
 - Báo cáo nộp bài: `Report_Assignment1_HSF302.docx` ở gốc repo, đã được người dùng bổ sung ảnh. Ngày 20/10/2026 mở kiểm tra bằng python-docx thành công, có 60 ảnh inline; chưa kiểm tra bố cục bằng render. Cần đối chiếu thông tin nhóm và cập nhật mục lục trước khi nộp.
-- Chưa có approval của thành viên cho PR tài liệu/release; chưa kiểm chứng quyền Read của giảng viên.
-- Chưa tạo tag, chưa publish GitHub Release, chưa đóng issue #46.
+- API GitHub chưa ghi nhận approval trên PR tài liệu #49. PR release cần reviewer chạy Maven và approve. Repo có cộng tác viên `traltb-byte` với quyền Write; cần nhóm xác nhận tài khoản giảng viên.
+- Chưa tạo tag, chưa publish GitHub Release, chưa đóng issue #48.
 - Không xác nhận issue I19 Done chỉ dựa vào các kiểm tra cục bộ.
+
+## Chuẩn bị release ngày 20/10/2026
+- Tạo `release/1.0.0` từ `origin/develop` tại `57f42e9` trong worktree sạch, không mang theo 5 entity Unicode chưa commit.
+- Maven artifact version được đặt thành `1.0.0`.
+- Build bản release bằng `mvn -B -o clean verify`: 1 test, 0 failure/error. Kết quả kiểm tra tại SHA cuối cùng được ghi trong PR release.
+- Báo cáo Word mở được bằng python-docx, có 60 ảnh inline; chưa render xác nhận bố cục. Tên/MSSV trong README vẫn để trống theo yêu cầu trước đây.
+- 79 kiểm tra SQL Server/Playwright bên dưới là bằng chứng lịch sử ngày 16/10 tại `3d10621`; không phải lần chạy lại tại SHA release ngày 20/10.
+- Chỉ tạo tag và GitHub Release sau khi đủ review/approval, hoàn tất các điều kiện nghiệm thu và merge PR release vào main.
 
 ## Bảng kết quả nghiệm thu
 | STT | Kiểm tra | Kết quả |
@@ -106,10 +114,10 @@ Issue GitHub: #46 · TODO 32 · ngày kiểm tra: 16/10/2026.
 
 ## Thứ tự PR
 1. PR đồng bộ trước tài liệu: main → develop, merge commit; đưa hai bản sửa TODO 23 đã review về develop.
-2. PR docs/19-readme → develop: ba commit I19, một smoke test và bốn ảnh; dùng Refs #46.
+2. PR docs/19-readme → develop: ba commit I19, một smoke test và bốn ảnh; dùng Refs #48.
 3. Sau khi PR tài liệu được review/merge và các mục còn thiếu được xử lý, tạo release/1.0.0 từ develop đã cập nhật; chạy lại kiểm thử tại đúng SHA.
 4. PR release/1.0.0 → main, đủ approval theo teamwork, dùng Create a merge commit.
-5. Chỉ sau merge release: tag v1.0.0 và GitHub Release, rồi PR main → develop; chỉ đóng #46 khi đủ các tiêu chí.
+5. Chỉ sau merge release: tag v1.0.0 và GitHub Release, rồi PR main → develop; chỉ đóng #48 khi đủ các tiêu chí.
 
 ## PR 1 Đồng bộ main về develop
 Tiêu đề: `chore(showtime): sync reviewed fixes into develop`
@@ -118,7 +126,7 @@ Head: `main` · Base: `develop` · Merge commit.
 ```markdown
 ## Mô tả
 Đồng bộ hai bản sửa TODO 23 đã merge vào main: hủy đơn khi sửa suất sang CANCELLED và khóa phòng khi kiểm tra/lưu lịch chiếu. Giữ cùng lịch sử giữa hai nhánh trước khi tích hợp tài liệu I19.
-Refs #46
+Refs #48
 
 ## Loại thay đổi
 - [ ] feat
@@ -154,7 +162,7 @@ Chỉ mở/merge sau PR đồng bộ để diff tập trung vào I19.
 ## Mô tả
 Bổ sung smoke test H2, README theo phiên bản công nghệ thực tế, hướng dẫn SQL Server UTF-8, cấu hình local/test, tài khoản seed, URL và bốn ảnh màn hình. Thêm phân công nhóm hai người; họ tên/MSSV để trống theo yêu cầu.
 Bổ sung ba template GitHub, biên bản `release.md` và báo cáo `Report_Assignment1_HSF302.docx` ở gốc repo; test/docs cá nhân khác vẫn bị ignore.
-Refs #46
+Refs #48
 
 ## Loại thay đổi
 - [ ] feat
@@ -195,7 +203,7 @@ Mẫu này chỉ dùng sau khi đã tạo nhánh release từ develop đã tích
 ```markdown
 ## Mô tả
 Chuẩn bị v1.0.0 của FU Cinema Ticket System với các chức năng Assignment 1 và tài liệu cài đặt.
-Refs #46
+Refs #48
 
 ## Loại thay đổi
 - [ ] feat
@@ -209,7 +217,7 @@ Refs #46
 1. Tác giả và reviewer checkout release/1.0.0, chạy mvn verify.
 2. Chạy lại checklist Guest/Admin/Customer, transaction, tranh ghế, lịch chiếu và báo cáo trên SQL Server tại đúng SHA release.
 3. Kiểm tra README, báo cáo Word, ảnh và quyền truy cập của giảng viên.
-Kết quả mong đợi: đủ tiêu chí issue #46, không có blocker, đủ approvals trước merge.
+Kết quả mong đợi: đủ tiêu chí issue #48, không có blocker, đủ approvals trước merge.
 
 ## Ảnh chụp màn hình
 
@@ -230,7 +238,7 @@ Head: `main` · Base: `develop` · Create a merge commit.
 ```markdown
 ## Mô tả
 Đồng bộ commit phát hành v1.0.0 về develop sau khi PR release đã merge, tag và GitHub Release đã được tạo.
-Closes #46
+Closes #48
 
 ## Loại thay đổi
 - [ ] feat
@@ -244,7 +252,7 @@ Closes #46
 1. Kiểm tra v1.0.0 trỏ đúng commit phát hành trên main và GitHub Release tồn tại.
 2. Kiểm tra develop nhận đầy đủ lịch sử phát hành; chạy lại mvn verify.
 3. Xác nhận báo cáo, ảnh, thông tin nhóm và quyền giảng viên đã hoàn tất.
-Kết quả mong đợi: main/develop đồng bộ; issue #46 đủ điều kiện Done.
+Kết quả mong đợi: main/develop đồng bộ; issue #48 đủ điều kiện Done.
 
 ## Ảnh chụp màn hình
 
