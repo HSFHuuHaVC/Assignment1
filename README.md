@@ -170,6 +170,8 @@ I01–I19 là mã kế hoạch; số issue thật trên GitHub có thể khác. 
 3. Review và merge PR tài liệu vào `develop`; tạo `release/1.0.0` từ develop đã tích hợp đầy đủ.
 4. Review PR `release/1.0.0 -> main` theo teamwork và dùng merge commit.
 5. Chỉ sau khi PR release được merge và đủ approval: gắn tag `v1.0.0`, tạo GitHub Release, rồi back-merge `main -> develop` qua PR.
-6. Điền tên/MSSV, bổ sung ảnh vào báo cáo Word, cập nhật mục lục và cấp quyền Read cho giảng viên trước khi nộp.
+6. Đối chiếu tên/MSSV và cập nhật mục lục trong [báo cáo Word](Report_Assignment1_HSF302.docx) đã bổ sung ảnh; cấp quyền Read cho giảng viên trước khi nộp.
 
 README này không xác nhận tag/release đã được phát hành. Kiểm tra trạng thái thực tế tại [GitHub Releases](https://github.com/HSFHuuHaVC/Assignment1/releases).
+
+Biên bản kiểm thử và các bước phát hành còn lại: [release.md](release.md).
