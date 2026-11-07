@@ -8,15 +8,23 @@ import com.fu.cinema.desktop.util.FxAsync;
 import com.fu.cinema.dto.SessionUser;
 import com.fu.cinema.enums.Role;
 import javafx.application.Platform;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -39,34 +47,112 @@ class DesktopUiTests {
     @AfterAll static void exit() { Platform.exit(); }
 
     @Test void mainFxmlUsesPrototypeControllersAndFitsBothWindowSizes() throws Exception {
-        fx(() -> {
-            var session = new DesktopSession();
-            session.login(new SessionUser(1L, null, "Administrator", Role.ADMIN));
-            try (var context = new GenericApplicationContext()) {
-                var manager = new SceneManager(context, session);
+        var session = new DesktopSession();
+        var context = new GenericApplicationContext();
+        var manager = new SceneManager(context, session);
+        Stage stage = fx(() -> {
+                session.login(new SessionUser(1L, null, "Administrator", Role.ADMIN));
                 context.registerBean(MainController.class, () -> new MainController(manager, session),
                         definition -> definition.setScope("prototype"));
                 context.refresh();
-                Stage stage = new Stage();
-                try {
-                    manager.init(stage);
+                Stage window = new Stage();
+                    manager.init(window);
                     manager.switchTo(View.MAIN);
                     assertNotSame(manager.load(View.MAIN).controller(), manager.load(View.MAIN).controller());
-                    assertTrue(stage.getScene().lookup("#lblUser").isVisible());
+                    assertTrue(window.getScene().lookup("#lblUser").isVisible());
+                return window;
+        });
+        try {
                     for (int width : new int[]{1200, 1000}) {
+                        fx(() -> {
                         stage.setWidth(width);
                         stage.setHeight(width == 1200 ? 720 : 640);
+                        return null;
+                        });
+                        settle();
+                        fx(() -> {
                         stage.getScene().getRoot().applyCss();
                         stage.getScene().getRoot().layout();
                         var logout = stage.getScene().lookup("#btnLogout");
                         var bounds = logout.localToScene(logout.getBoundsInLocal());
                         assertTrue(bounds.getMaxY() <= stage.getScene().getHeight());
+                        assertTrue(stage.getScene().getWidth() <= width);
                         snapshot(stage, "main-" + width);
+                        return null;
+                        });
                     }
-                } finally { stage.close(); session.logout(); }
-            }
-            return null;
-        });
+        } finally {
+            fx(() -> { stage.close(); session.logout(); context.close(); return null; });
+        }
+    }
+
+    @Test void loginFxmlValidatesAuthenticatesAndLogsOutAgainstRealH2Services() throws Exception {
+        try (var context = new SpringApplicationBuilder(com.fu.cinema.FuCinemaTicketSystemApplication.class)
+                .web(WebApplicationType.NONE).headless(false).profiles("test", "desktop")
+                .run("--spring.profiles.active=test", "--spring.datasource.url=jdbc:h2:mem:desktopUi;MODE=MSSQLServer")) {
+            var manager = context.getBean(SceneManager.class);
+            var session = context.getBean(DesktopSession.class);
+            Stage stage = fx(() -> {
+                Stage window = new Stage(); manager.init(window); manager.switchTo(View.LOGIN); return window;
+            });
+            try {
+                for (int width : new int[]{1200, 1000}) {
+                    fx(() -> { stage.setWidth(width); stage.setHeight(width == 1200 ? 720 : 640); return null; });
+                    settle();
+                    fx(() -> {
+                        assertTrue(((Button) stage.getScene().lookup("#btnLogin")).isDisabled());
+                        var bounds = stage.getScene().lookup("#form").localToScene(stage.getScene().lookup("#form").getBoundsInLocal());
+                        assertTrue(bounds.getMinY() >= 0 && bounds.getMaxY() <= stage.getScene().getHeight());
+                        snapshot(stage, "login-" + width); return null;
+                    });
+                }
+                for (String username : new String[]{"admin@fucinema.vn", "an.nv@gmail.com"}) {
+                    fx(() -> {
+                        ((TextField) stage.getScene().lookup("#tfUsername")).setText(username);
+                        ((TextField) stage.getScene().lookup("#pfPassword")).setText(username.startsWith("admin") ? "wrong" : "Customer@123");
+                        ((Button) stage.getScene().lookup("#btnLogin")).fire(); return null;
+                    });
+                    waitFor(() -> dialog() != null);
+                    fx(() -> {
+                        assertNull(session.getUser());
+                        assertTrue(((TextField) stage.getScene().lookup("#pfPassword")).getText().isEmpty());
+                        DialogPane dialog = dialog();
+                        if (username.startsWith("an")) assertTrue(dialog.getContentText().contains("ADMIN"));
+                        ((Button) dialog.lookupButton(ButtonType.OK)).fire(); return null;
+                    });
+                }
+                fx(() -> {
+                    ((TextField) stage.getScene().lookup("#tfUsername")).setText("admin@fucinema.vn");
+                    ((TextField) stage.getScene().lookup("#pfPassword")).setText("Admin@123");
+                    ((Button) stage.getScene().lookup("#btnLogin")).fire(); return null;
+                });
+                waitFor(() -> stage.getScene().lookup("#btnLogout") != null);
+                fx(() -> {
+                    assertNotNull(session.getUser());
+                    ((Button) stage.getScene().lookup("#btnLogout")).fire();
+                    assertNull(session.getUser());
+                    assertNotNull(stage.getScene().lookup("#btnLogin"));
+                    assertThrows(com.fu.cinema.exception.BusinessException.class, session::requireAdmin);
+                    return null;
+                });
+            } finally { fx(() -> { stage.close(); session.logout(); return null; }); }
+        }
+    }
+
+    private static DialogPane dialog() {
+        return Window.getWindows().stream().filter(Window::isShowing)
+                .map(window -> window.getScene().lookup(".dialog-pane"))
+                .filter(DialogPane.class::isInstance).map(DialogPane.class::cast).findFirst().orElse(null);
+    }
+    private static void waitFor(java.util.concurrent.Callable<Boolean> condition) throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(12);
+        while (System.nanoTime() < deadline) { if (fx(condition)) return; settle(); }
+        fail("Timed out waiting for JavaFX state");
+    }
+    private static void settle() throws Exception {
+        var ready = new CountDownLatch(1);
+        fx(() -> { var pause = new PauseTransition(Duration.millis(150)); pause.setOnFinished(e -> ready.countDown()); pause.play(); return null; });
+        assertTrue(ready.await(3, TimeUnit.SECONDS));
     }
 
     @Test void asyncWorkUsesVirtualThreadAndRestoresBusyOnSuccessFailureAndCancellation() throws Exception {
