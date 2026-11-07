@@ -51,6 +51,8 @@ application-local.properties
 !/src/test/java/com/fu/
 !/src/test/java/com/fu/cinema/
 !/src/test/java/com/fu/cinema/FuCinemaTicketSystemApplicationTests.java
+!/src/test/java/com/fu/cinema/desktop/
+!/src/test/java/com/fu/cinema/desktop/**
 /docs/**
 !/docs/images/
 !/docs/images/*.png
