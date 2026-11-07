@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.fu.cinema.desktop.controller.GenreController"
+      styleClass="page" spacing="16">
+
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <VBox spacing="4">
+            <Label text="Quản lý Thể loại" styleClass="page-title"/>
+            <Label fx:id="lblCount" text="Tổng cộng: 0 thể loại" styleClass="page-caption"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <HBox spacing="18" VBox.vgrow="ALWAYS">
+        <VBox spacing="8" HBox.hgrow="ALWAYS">
+            <TableView fx:id="tableGenres" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="Mã" prefWidth="70"/>
+                    <TableColumn fx:id="colName" text="Tên thể loại" prefWidth="220"/>
+                    <TableColumn fx:id="colDescription" text="Mô tả" prefWidth="380"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+                <placeholder>
+                    <Label text="Không có thể loại nào" styleClass="empty-placeholder"/>
+                </placeholder>
+            </TableView>
+        </VBox>
+
+        <VBox spacing="14" styleClass="genre-card" prefWidth="360" minWidth="320">
+            <Label fx:id="lblFormTitle" text="Thêm thể loại mới" styleClass="section-title"/>
+            <Separator/>
+
+            <VBox spacing="6">
+                <Label text="Tên thể loại *" styleClass="form-label"/>
+                <TextField fx:id="txtName" promptText="Ví dụ: Hành động, Hài hước..."/>
+            </VBox>
+
+            <VBox spacing="6" VBox.vgrow="ALWAYS">
+                <Label text="Mô tả *" styleClass="form-label"/>
+                <TextArea fx:id="txtDescription" promptText="Mô tả chi tiết về thể loại phim..."
+                          prefRowCount="6" wrapText="true" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <HBox spacing="8" alignment="CENTER_RIGHT">
+                <Button fx:id="btnReset" text="Làm mới" onAction="#onReset"/>
+                <Button fx:id="btnDelete" text="Xóa" onAction="#onDelete" styleClass="button-danger"/>
+                <Button fx:id="btnSave" text="Thêm thể loại" onAction="#onSave" styleClass="primary"/>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>
