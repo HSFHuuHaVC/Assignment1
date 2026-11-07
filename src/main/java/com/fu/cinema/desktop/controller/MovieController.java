@@ -302,7 +302,26 @@ public class MovieController {
     }
 
     private void openMovieDialog(Long movieId) {
-        AlertUtil.info("Chức năng thêm/sửa phim được tích hợp ở I28.");
+        try {
+            SceneManager.Loaded<MovieDialogController> loaded = sceneManager.load(View.MOVIE_DIALOG);
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            if (sceneManager.getStage() != null) {
+                dialogStage.initOwner(sceneManager.getStage());
+            }
+            dialogStage.setTitle(movieId == null ? "Thêm phim mới" : "Chỉnh sửa phim");
+            dialogStage.setScene(new Scene(loaded.root()));
+            dialogStage.setResizable(false);
+
+            loaded.controller().init(dialogStage, movieId);
+            dialogStage.showAndWait();
+
+            if (loaded.controller().isSaved()) {
+                loadPage(pagination.getCurrentPageIndex());
+            }
+        } catch (Exception ex) {
+            AlertUtil.showError(ex);
+        }
     }
 
     public record MovieStatusOption(MovieStatus status, String label) {

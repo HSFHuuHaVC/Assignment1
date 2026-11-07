@@ -40,9 +40,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @EnabledIfSystemProperty(named = "desktop.ui.tests", matches = "true")
 class DesktopUiTests {
     @BeforeAll static void toolkit() throws Exception {
-        var ready = new CountDownLatch(1);
-        Platform.startup(() -> { Platform.setImplicitExit(false); ready.countDown(); });
-        assertTrue(ready.await(10, TimeUnit.SECONDS));
+        try {
+            var ready = new CountDownLatch(1);
+            Platform.startup(() -> { Platform.setImplicitExit(false); ready.countDown(); });
+            assertTrue(ready.await(10, TimeUnit.SECONDS));
+        } catch (IllegalStateException alreadyStarted) {
+            // Toolkit already started by another test class
+        }
     }
     @AfterAll static void exit() { Platform.exit(); }
 
