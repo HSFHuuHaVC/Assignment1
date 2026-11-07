@@ -58,6 +58,20 @@ class DesktopQuyenUiTests {
         Thread.sleep(400);
     }
 
+    private static void snapshot(Stage stage, String name) throws Exception {
+        java.nio.file.Path dir = java.nio.file.Path.of("docs/images");
+        java.nio.file.Files.createDirectories(dir);
+        javafx.scene.image.WritableImage image = stage.getScene().snapshot(null);
+        java.awt.image.BufferedImage buffered = new java.awt.image.BufferedImage(
+                (int) image.getWidth(), (int) image.getHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        for (int x = 0; x < (int) image.getWidth(); x++) {
+            for (int y = 0; y < (int) image.getHeight(); y++) {
+                buffered.setRGB(x, y, image.getPixelReader().getArgb(x, y));
+            }
+        }
+        javax.imageio.ImageIO.write(buffered, "png", dir.resolve("desktop-" + name + ".png").toFile());
+    }
+
     @Test
     void genreFxmlLoadsAndValidatesFields() throws Exception {
         try (ConfigurableApplicationContext context = new SpringApplicationBuilder(com.fu.cinema.FuCinemaTicketSystemApplication.class)
@@ -89,6 +103,8 @@ class DesktopQuyenUiTests {
                 settle();
 
                 onFx(() -> {
+                    stage.getScene().getRoot().applyCss();
+                    stage.getScene().getRoot().layout();
                     TableView<?> table = (TableView<?>) stage.getScene().lookup("#tableGenres");
                     assertNotNull(table);
                     TextField txtName = (TextField) stage.getScene().lookup("#txtName");
@@ -98,6 +114,7 @@ class DesktopQuyenUiTests {
                     Button btnDelete = (Button) stage.getScene().lookup("#btnDelete");
                     assertNotNull(btnDelete);
                     assertTrue(btnDelete.isDisable(), "Delete button must be disabled initially without selection");
+                    snapshot(stage, "genre");
                     return null;
                 });
             } finally {
@@ -140,6 +157,8 @@ class DesktopQuyenUiTests {
                 settle();
 
                 onFx(() -> {
+                    stage.getScene().getRoot().applyCss();
+                    stage.getScene().getRoot().layout();
                     TableView<?> table = (TableView<?>) stage.getScene().lookup("#tableMovies");
                     assertNotNull(table);
                     TextField txtKw = (TextField) stage.getScene().lookup("#txtKeyword");
@@ -150,6 +169,7 @@ class DesktopQuyenUiTests {
                     assertNotNull(cmbStatus);
                     Pagination pagination = (Pagination) stage.getScene().lookup("#pagination");
                     assertNotNull(pagination);
+                    snapshot(stage, "movie");
                     return null;
                 });
             } finally {
@@ -187,6 +207,10 @@ class DesktopQuyenUiTests {
             try {
                 settle();
                 onFx(() -> {
+                    stage.getScene().getRoot().applyCss();
+                    stage.getScene().getRoot().layout();
+                    snapshot(stage, "movie-dialog");
+
                     TextField txtTitle = (TextField) stage.getScene().lookup("#txtTitle");
                     assertNotNull(txtTitle);
                     Spinner<?> spnDuration = (Spinner<?>) stage.getScene().lookup("#spnDuration");
