@@ -8,19 +8,19 @@ Các nhánh kế thừa nhau nhằm giữ mỗi PR chỉ chứa một phần vi�
 
 | Mã | Head | Base ban đầu | Phạm vi |
 |---|---|---|---|
-| I20 | `chore/desktop-repo-templates` | `develop` | Template issue/PR và CODEOWNERS |
-| I21 | `feature/desktop-bootstrap` | `chore/desktop-repo-templates` | JavaFX, hai main, profile, session sớm, test bootstrap |
-| I23 | `feature/desktop-utilities` | `feature/desktop-bootstrap` | FxAsync, AlertUtil, FxValidator, MoneyUtil, PageResult |
-| I22 | `feature/desktop-navigation` | `feature/desktop-utilities` | SceneManager/View, main FXML/CSS, MainController, test UI |
-| I24 | `feature/desktop-login` | `feature/desktop-navigation` | AuthFacade, LoginController/FXML, startup tới login, facade/UI tests |
-| I34 | `docs/desktop-release` | `feature/desktop-login` | README, ảnh thật, biên bản, phụ lục Word và test đóng process; **không phát hành** |
+| I20 | `chore/20-desktop-repo-templates` | `develop` | Template issue/PR và CODEOWNERS |
+| I21 | `feature/21-desktop-bootstrap` | `chore/20-desktop-repo-templates` | JavaFX, hai main, profile, session sớm, test bootstrap |
+| I23 | `feature/23-desktop-utilities` | `feature/21-desktop-bootstrap` | FxAsync, AlertUtil, FxValidator, MoneyUtil, PageResult |
+| I22 | `feature/22-desktop-navigation` | `feature/23-desktop-utilities` | SceneManager/View, main FXML/CSS, MainController, test UI |
+| I24 | `feature/24-desktop-login` | `feature/22-desktop-navigation` | AuthFacade, LoginController/FXML, startup tới login, facade/UI tests |
+| I34 | `docs/34-desktop-release` | `feature/24-desktop-login` | README, ảnh thật, biên bản, phụ lục Word và test đóng process; **không phát hành** |
 
-Các commit theo convention có sẵn của Assignment 1: `chore(github)`, `feat(desktop)`, `test(desktop)`, `docs(readme)` và mô tả phần việc. Không gắn số `Refs #...` giả khi chưa có số issue được xác nhận. Tên nhánh không chứa số issue theo yêu cầu nhóm.
+Các commit theo convention có sẵn của Assignment 1: `chore(github)`, `feat(desktop)`, `test(desktop)`, `docs(readme)` và mô tả phần việc. Không gắn số `Refs #...` giả khi chưa có số issue được xác nhận. Tên nhánh có số mã kế hoạch để dễ phân biệt, ví dụ feature/21-desktop-bootstrap; số này không phải xác nhận số issue GitHub.
 
 ## Nền tảng để Hà Quyền Long dùng tiếp
 
-- F0: dùng bootstrap/profile/session và các tiện ích đã có trên `feature/desktop-utilities`. Nên lấy nhánh bàn giao cuối cùng sau khi Leader hợp nhất qua PR để tránh tự copy file.
-- F1: đăng nhập/menu hoạt động trên `feature/desktop-login`. Mỗi người chỉ thêm màn hình/Facade/model/test của mình, không tạo lại framework nền tảng.
+- F0: dùng bootstrap/profile/session và các tiện ích đã có trên `feature/23-desktop-utilities`. Nên lấy nhánh bàn giao cuối cùng sau khi Leader hợp nhất qua PR để tránh tự copy file.
+- F1: đăng nhập/menu hoạt động trên `feature/24-desktop-login`. Mỗi người chỉ thêm màn hình/Facade/model/test của mình, không tạo lại framework nền tảng.
 - Controller FXML: `@Component @Scope("prototype")`, constructor injection; nạp bằng `SceneManager` đã có controller factory.
 - Giữ tên FXML trong enum `View`: `dashboard.fxml`, `genre.fxml`, `movie.fxml`, `movie-dialog.fxml`, `schedule.fxml`, `counter-sale.fxml`, `booking.fxml`, `report.fxml`.
 - `SceneManager.showIn` hiện thông báo khi chưa có resource. Thêm FXML thật đúng đường dẫn là được nạp; trước nghiệm thu toàn bài phải có đủ màn hình và không còn đường đi vào thông báo tạm.
