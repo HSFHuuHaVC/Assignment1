@@ -30,6 +30,7 @@
 .legend-free     { -fx-background-color: #e5e7eb; }
 .legend-selected { -fx-background-color: #16a34a; }
 .legend-sold     { -fx-background-color: #6b7280; }
+.total           { -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #be123c; }
 
 /* Quyền — genre, movie list and movie dialog. */
 
