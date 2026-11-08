@@ -1,9 +1,6 @@
 package com.fu.cinema.desktop;
 
 import com.fu.cinema.desktop.controller.MainController;
-import com.fu.cinema.desktop.controller.DashboardController;
-import com.fu.cinema.desktop.facade.DashboardFacade;
-import com.fu.cinema.desktop.model.DashboardData;
 import com.fu.cinema.desktop.navigation.SceneManager;
 import com.fu.cinema.desktop.navigation.View;
 import com.fu.cinema.desktop.session.DesktopSession;
@@ -38,7 +35,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /** Opt in on a machine with an interactive desktop: -Ddesktop.ui.tests=true. */
 @EnabledIfSystemProperty(named = "desktop.ui.tests", matches = "true")
@@ -60,12 +56,6 @@ class DesktopUiTests {
         var manager = new SceneManager(context, session);
         Stage stage = fx(() -> {
                 session.login(new SessionUser(1L, null, "Administrator", Role.ADMIN));
-                DashboardFacade dashboard = mock(DashboardFacade.class);
-                when(dashboard.load()).thenReturn(new DashboardData(0, 0, 0, java.util.List.of()));
-                context.registerBean(FxAsync.class);
-                context.registerBean(DashboardController.class,
-                        () -> new DashboardController(dashboard, context.getBean(FxAsync.class)),
-                        definition -> definition.setScope("prototype"));
                 context.registerBean(MainController.class, () -> new MainController(manager, session),
                         definition -> definition.setScope("prototype"));
                 context.refresh();

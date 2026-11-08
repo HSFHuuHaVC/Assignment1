@@ -1,7 +1,7 @@
 package com.fu.cinema.desktop.facade;
 
 import com.fu.cinema.desktop.model.CustomerItem;
-import com.fu.cinema.desktop.model.CounterMovieItem;
+import com.fu.cinema.desktop.model.MovieItem;
 import com.fu.cinema.desktop.model.SaleResult;
 import com.fu.cinema.desktop.model.SeatMapData;
 import com.fu.cinema.desktop.model.ShowtimeItem;
@@ -38,9 +38,9 @@ public class CounterSaleFacade {
         return customerService.search(keyword, 0, 20).map(CustomerItem::from).getContent();
     }
 
-    public List<CounterMovieItem> movies() {
+    public List<MovieItem> movies() {
         return movieService.findSchedulable().stream()
-                .map(m -> new CounterMovieItem(m.getMovieId(), m.getTitle(), m.getDuration(), m.getAgeRating())).toList();
+                .map(m -> new MovieItem(m.getMovieId(), m.getTitle(), m.getDuration(), m.getAgeRating())).toList();
     }
 
     public List<ShowtimeItem> showtimes(Long movieId) {                   // chỉ suất OPEN sắp tới

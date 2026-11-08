@@ -3,7 +3,7 @@ package com.fu.cinema.desktop.controller;
 import com.fu.cinema.desktop.component.SeatMapView;
 import com.fu.cinema.desktop.facade.CounterSaleFacade;
 import com.fu.cinema.desktop.model.CustomerItem;
-import com.fu.cinema.desktop.model.CounterMovieItem;
+import com.fu.cinema.desktop.model.MovieItem;
 import com.fu.cinema.desktop.model.ShowtimeItem;
 import com.fu.cinema.desktop.util.AlertUtil;
 import com.fu.cinema.desktop.util.FxAsync;
@@ -35,7 +35,7 @@ public class CounterSaleController {
 
     @FXML private TextField tfCustomer;
     @FXML private ListView<CustomerItem> lvCustomers;
-    @FXML private ComboBox<CounterMovieItem> cbMovie;
+    @FXML private ComboBox<MovieItem> cbMovie;
     @FXML private ComboBox<ShowtimeItem> cbShowtime;
     @FXML private SeatMapView seatMap;
     @FXML private Label lblSeats;

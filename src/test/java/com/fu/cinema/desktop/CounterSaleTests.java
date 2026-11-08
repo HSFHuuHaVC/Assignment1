@@ -3,7 +3,7 @@ package com.fu.cinema.desktop;
 import com.fu.cinema.desktop.facade.AuthFacade;
 import com.fu.cinema.desktop.facade.CounterSaleFacade;
 import com.fu.cinema.desktop.model.CustomerItem;
-import com.fu.cinema.desktop.model.CounterMovieItem;
+import com.fu.cinema.desktop.model.MovieItem;
 import com.fu.cinema.desktop.model.SaleResult;
 import com.fu.cinema.desktop.model.SeatMapData;
 import com.fu.cinema.desktop.model.ShowtimeItem;
@@ -62,9 +62,9 @@ class CounterSaleTests {
         CustomerItem customer = customers.getFirst();
 
         // 2. Lấy danh sách phim
-        List<CounterMovieItem> movies = counterSaleFacade.movies();
+        List<MovieItem> movies = counterSaleFacade.movies();
         assertFalse(movies.isEmpty());
-        CounterMovieItem movie = movies.getFirst();
+        MovieItem movie = movies.getFirst();
 
         // 3. Lấy suất chiếu sắp tới của phim
         List<ShowtimeItem> showtimes = counterSaleFacade.showtimes(movie.id());
