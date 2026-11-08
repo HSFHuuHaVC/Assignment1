@@ -21,6 +21,15 @@
     -fx-border-color: #d32f2f; -fx-border-width: 1.5;
 }
 /* Hà — SeatMapView, counter-sale and booking. */
+.screen          { -fx-background-color: #9ca3af; -fx-text-fill: white; -fx-alignment: center; -fx-padding: 4; }
+.seat            { -fx-min-width: 34; -fx-min-height: 30; -fx-background-color: #e5e7eb; -fx-background-radius: 6 6 2 2; }
+.seat:hover      { -fx-background-color: #d1d5db; }
+.seat:selected   { -fx-background-color: #16a34a; -fx-text-fill: white; }
+.seat:sold       { -fx-background-color: #6b7280; -fx-text-fill: white; -fx-opacity: 1; }   /* ghi đè mờ 0.4 mặc định của :disabled */
+.legend-swatch   { -fx-min-width: 16; -fx-min-height: 16; -fx-background-radius: 3; }
+.legend-free     { -fx-background-color: #e5e7eb; }
+.legend-selected { -fx-background-color: #16a34a; }
+.legend-sold     { -fx-background-color: #6b7280; }
 
 /* Quyền — genre, movie list and movie dialog. */
 .genre-card, .movie-card {
