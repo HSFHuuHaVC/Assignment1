@@ -2,15 +2,21 @@ package com.fu.cinema.desktop.controller;
 
 import com.fu.cinema.desktop.facade.DashboardFacade;
 import com.fu.cinema.desktop.model.DashboardData;
+import com.fu.cinema.desktop.util.AlertUtil;
+import com.fu.cinema.desktop.util.FxAsync;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import lombok.RequiredArgsConstructor;
@@ -26,29 +32,37 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DashboardController {
     private final DashboardFacade facade;
+    private final FxAsync fxAsync;
+    private final BooleanProperty refreshing = new SimpleBooleanProperty();
 
     @FXML private VBox root;
     @FXML private Label lblShowing, lblCustomers, lblPending, lblUpdated;
     @FXML private BarChart<String, Number> chartRooms;
     @FXML private Button btnRefresh;
+    @FXML private ProgressIndicator progress;
 
     private Timeline autoRefresh;
     private Task<DashboardData> loading;
+    private long loadVersion;
 
     @FXML
     private void initialize() {
         chartRooms.setAnimated(false);
+        btnRefresh.disableProperty().bind(refreshing);
+        progress.visibleProperty().bind(refreshing);
+        progress.managedProperty().bind(progress.visibleProperty());
         autoRefresh = new Timeline(new KeyFrame(Duration.seconds(60), event -> refresh()));
         autoRefresh.setCycleCount(Animation.INDEFINITE);
         root.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene == null) {
                 autoRefresh.stop();
+                loadVersion++;
                 if (loading != null) {
                     Task<DashboardData> previous = loading;
                     loading = null;
                     previous.cancel();
-                    btnRefresh.setDisable(false);
                 }
+                refreshing.set(false);
             } else {
                 autoRefresh.playFromStart();
                 refresh();
@@ -58,30 +72,29 @@ public class DashboardController {
 
     @FXML
     private void refresh() {
-        if (loading != null) return;
+        if (refreshing.get()) return;
 
-        Task<DashboardData> task = new Task<>() {
-            @Override
-            protected DashboardData call() {
-                return facade.load();
-            }
-        };
-        loading = task;
-        btnRefresh.setDisable(true);
+        long version = ++loadVersion;
+        refreshing.set(true);
         lblUpdated.setText("Đang tải dữ liệu…");
-        task.setOnSucceeded(event -> {
-            if (loading != task) return;
+        Task<DashboardData> task = fxAsync.run(facade::load, data -> {
+            if (loadVersion != version) return;
             loading = null;
-            btnRefresh.setDisable(false);
-            render(task.getValue());
-        });
-        task.setOnFailed(event -> {
-            if (loading != task) return;
+            refreshing.set(false);
+            render(data);
+        }, error -> {
+            if (loadVersion != version) return;
             loading = null;
-            btnRefresh.setDisable(false);
-            lblUpdated.setText("Không thể tải dữ liệu. Vui lòng làm mới để thử lại.");
+            refreshing.set(false);
+            lblUpdated.setText(AlertUtil.describe(error).text() + " Bấm Làm mới để thử lại.");
+        }, null);
+        task.addEventHandler(WorkerStateEvent.WORKER_STATE_CANCELLED, event -> {
+            if (loadVersion != version) return;
+            loading = null;
+            refreshing.set(false);
+            lblUpdated.setText("Đã dừng tải dữ liệu.");
         });
-        Thread.startVirtualThread(task);
+        if (refreshing.get() && loadVersion == version) loading = task;
     }
 
     private void render(DashboardData data) {
@@ -94,6 +107,7 @@ public class DashboardController {
                 new XYChart.Data<>(room.roomName(), room.count())));
         chartRooms.getData().setAll(List.of(series));
         lblUpdated.setText("Cập nhật lúc " + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                + (data.todayByRoom().isEmpty() ? " — Chưa có suất chiếu hôm nay" : ""));
+                + (data.todayByRoom().stream().noneMatch(room -> room.count() > 0)
+                ? " — Chưa có suất chiếu hôm nay" : ""));
     }
 }
