@@ -40,9 +40,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @EnabledIfSystemProperty(named = "desktop.ui.tests", matches = "true")
 class DesktopUiTests {
     @BeforeAll static void toolkit() throws Exception {
-        var ready = new CountDownLatch(1);
-        Platform.startup(() -> { Platform.setImplicitExit(false); ready.countDown(); });
-        assertTrue(ready.await(10, TimeUnit.SECONDS));
+        try {
+            var ready = new CountDownLatch(1);
+            Platform.startup(() -> { Platform.setImplicitExit(false); ready.countDown(); });
+            assertTrue(ready.await(10, TimeUnit.SECONDS));
+        } catch (IllegalStateException alreadyStarted) {
+            // Toolkit already started by another test class
+        }
     }
     @AfterAll static void exit() { Platform.exit(); }
 
@@ -191,6 +195,23 @@ class DesktopUiTests {
             assertTrue(cancelled.await(10, TimeUnit.SECONDS));
             fx(() -> { assertFalse(button.isDisable()); return null; });
         } finally { async.destroy(); }
+    }
+
+    @Test void closingLastWindowClosesSpringContextAndExitsChildJvm() throws Exception {
+        Path log = Path.of("target", "desktop-lifecycle.log");
+        String java = Path.of(System.getProperty("java.home"), "bin",
+                System.getProperty("os.name").startsWith("Windows") ? "java.exe" : "java").toString();
+        String classpath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+        Process child = new ProcessBuilder(java, "-Djava.awt.headless=false", "-cp", classpath,
+                DesktopLifecycleProbe.class.getName()).redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        try {
+            assertTrue(child.waitFor(35, TimeUnit.SECONDS), "Desktop process did not stop after window close");
+            String output = Files.readString(log);
+            assertEquals(0, child.exitValue(), output);
+            assertTrue(output.contains("DESKTOP_STOP_COMPLETED"), output);
+            assertTrue(output.contains("Shutdown completed"), output);
+            assertFalse(output.contains("Tomcat started"), output);
+        } finally { if (child.isAlive()) child.destroyForcibly(); }
     }
 
     private static <T> T fx(java.util.concurrent.Callable<T> work) throws Exception {

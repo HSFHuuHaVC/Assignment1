@@ -56,3 +56,5 @@ application-local.properties
 /docs/**
 !/docs/images/
 !/docs/images/*.png
+!/docs/desktop-handoff.md
+!/docs/Desktop_Leader_Handoff.docx
