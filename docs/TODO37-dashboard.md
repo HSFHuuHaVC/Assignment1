@@ -45,6 +45,12 @@ JDK Microsoft 21.0.12.1. Lượt chạy đầy đủ có bật native JavaFX và
 `clean verify` thành công, **40 test, 0 failure, 0 error, 0 skip** trước khi
 đồng bộ các chức năng mới nhất của nhóm từ `develop`.
 
+Sau khi đồng bộ `develop` tại `1e19bfa`, `mvn clean verify` cũng thành công:
+**50 test được phát hiện, 39 chạy pass, 11 native/SQL được skip theo cờ mặc định**.
+Đợt tích hợp phát hiện code bán vé dùng nhầm record `MovieItem` của màn hình phim;
+đã tách `CounterMovieItem` theo quy ước phân công và kiểm tra lại toàn bộ build/test.
+Không thay đổi service, repository hoặc entity backend.
+
 | Tiêu chí I25 / issue #72 | Bằng chứng |
 |---|---|
 | Ba KPI và BarChart theo phòng | FXML JavaFX thật; ảnh dưới đây và DashboardUiTests |
@@ -72,8 +78,9 @@ ADMIN fixture và phòng `TODO37 test ...` là dữ liệu tạm đã được d
 mvn -Ddesktop.ui.tests=true -Ddashboard.sql.tests=true -DreuseForks=false clean verify
 ```
 
-Hai cờ native/SQL mặc định tắt để máy không có desktop hoặc SQL Server vẫn
-chạy được bộ test H2. `reuseForks=false` tránh dùng lại JVM sau `Platform.exit()`.
+Các test Dashboard native/SQL mặc định tắt để không yêu cầu SQL Server cá nhân
+trong lượt test H2. Một số test module khác trong `develop` có thể vẫn cần desktop.
+`reuseForks=false` tránh dùng lại JVM sau `Platform.exit()`.
 
 ## Kiểm tra giao diện sau khi tích hợp TODO 33–34
 
