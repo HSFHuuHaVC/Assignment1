@@ -175,3 +175,60 @@ I01–I19 là mã kế hoạch; số issue thật trên GitHub có thể khác. 
 README này không xác nhận tag/release đã được phát hành. Kiểm tra trạng thái thực tế tại [GitHub Releases](https://github.com/HSFHuuHaVC/Assignment1/releases).
 
 Biên bản kiểm thử và các bước phát hành còn lại: [release.md](release.md).
+
+## Ứng dụng Desktop Assignment 2
+
+Nền tảng quầy vé dùng JavaFX **21.0.5**, FXML/CSS, Java 21 và Spring Boot 4.1.1. Desktop dùng lại service và cùng SQL Server `FUCinemaTicketDB` với web. Đã triển khai phần của Leader: bootstrap, session ADMIN, tiện ích, điều hướng, đăng nhập/đăng xuất (TODO 33–36). Các màn hình nghiệp vụ TODO 37–45 thuộc các thành viên và hiện chưa được tích hợp; menu tương ứng hiển thị “Chức năng chưa sẵn sàng”.
+
+### Chạy web và desktop
+
+Chuẩn bị `application-local.properties` như phần cài đặt ở trên. Chạy hai terminal riêng tại thư mục có `pom.xml`:
+
+```powershell
+# Terminal 1 — web, main mặc định không thay đổi
+.\mvnw.cmd spring-boot:run
+
+# Terminal 2 — desktop, Maven profile chọn DesktopLauncher
+.\mvnw.cmd -Pdesktop spring-boot:run
+```
+
+IntelliJ: chạy `com.fu.cinema.desktop.DesktopLauncher.main()` bằng JDK 21. Không chạy `CinemaFxApp` trực tiếp. Launcher tắt DevTools restart trước khi Spring khởi động; `init()` chọn Spring profile `desktop` bổ sung `local`, không mở Tomcat; đóng cửa sổ sẽ đóng Spring context. Giữ thông tin DB cá nhân ngoài Git.
+
+Đăng nhập desktop bằng tài khoản ADMIN seed `admin@fucinema.vn` / `Admin@123`. CUSTOMER và tài khoản LOCKED bị từ chối. Nếu mật khẩu/trạng thái đã thay đổi trong DB, dùng giá trị hiện tại. H2 chỉ dùng demo/test độc lập; hai process H2 in-memory không chia sẻ database:
+
+```powershell
+.\mvnw.cmd -Pdesktop spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=test"
+```
+
+### Kiểm thử nền tảng desktop
+
+```powershell
+# Test context/session, tiện ích và AuthFacade, không cần giao diện
+.\mvnw.cmd clean verify
+
+# Có desktop tương tác: thêm test FXML, async và đóng process
+.\mvnw.cmd "-Ddesktop.ui.tests=true" clean verify
+```
+
+Trên bản clone sạch, bộ test được commit gồm smoke test web và các test desktop. Test JavaFX được bỏ qua mặc định và chỉ chạy khi có cờ trên. Kết quả kiểm tra và giới hạn: [biên bản bàn giao](docs/desktop-handoff.md). Các test fixture Assignment 1 cũ bị ignore không nằm trong bộ test được phát hành; nếu vẫn giữ chúng trên máy, xem lỗi baseline đã ghi trong biên bản trước khi diễn giải kết quả `verify`.
+
+### Phân công Assignment 2
+
+| Thành viên | Vai trò | Mã kế hoạch và TODO |
+|---|---|---|
+| Chương | Leader | I20–I24: GitHub/template và toàn bộ nền tảng TODO 33–36; I34: tài liệu/test/bàn giao |
+| Hà | Thành viên | I30–I32: SeatMapView, bán vé, đơn — TODO 42–44 |
+| Quyền | Thành viên | I26–I28: thể loại, danh sách/dialog phim — TODO 38–40 |
+| Long | Thành viên | I25, I29, I33: dashboard, phòng/suất, báo cáo/CSV — TODO 37, 41, 45 |
+
+Mã I20–I34 là mã kế hoạch tiếp nối Assignment 1, không phải số issue GitHub. Mỗi PR chỉ rõ test đã chạy và reviewer khác tác giả. Thành viên chọn reviewer theo kế hoạch; CODEOWNERS phần nền tảng là `@chuong123445`.
+
+### Ảnh giao diện đã triển khai
+
+Ảnh thật từ test JavaFX với dữ liệu H2, không phải ảnh thiết kế. Hiện có **hai màn hình**; yêu cầu sáu màn hình toàn bài cần bổ sung sau khi tích hợp các chức năng thành viên.
+
+![Đăng nhập quầy vé](docs/images/desktop-login.png)
+
+![Khung chính sau đăng nhập ADMIN](docs/images/desktop-main.png)
+
+[Phụ lục Word bàn giao phần Leader](docs/Desktop_Leader_Handoff.docx). Không tạo tag/GitHub Release hoặc thay phiên bản phát hành trong đợt này theo yêu cầu của nhóm.

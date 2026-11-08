@@ -29,6 +29,7 @@
     <properties>
         <java.version>21</java.version>
         <javafx.version>21.0.5</javafx.version>
+        <app.main-class>com.fu.cinema.FuCinemaTicketSystemApplication</app.main-class>
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -121,6 +122,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>${app.main-class}</mainClass>
+                </configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -160,5 +164,13 @@
 			</plugin>
 		</plugins>
 	</build>
+    <profiles>
+        <profile>
+            <id>desktop</id>
+            <properties>
+                <app.main-class>com.fu.cinema.desktop.DesktopLauncher</app.main-class>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

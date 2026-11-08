@@ -52,8 +52,10 @@ application-local.properties
 !/src/test/java/com/fu/cinema/
 !/src/test/java/com/fu/cinema/FuCinemaTicketSystemApplicationTests.java
 !/src/test/java/com/fu/cinema/desktop/
-!/src/test/java/com/fu/cinema/desktop/DashboardFacadeTest.java
+!/src/test/java/com/fu/cinema/desktop/**
 /docs/**
 !/docs/TODO37-dashboard.md
 !/docs/images/
 !/docs/images/*.png
+!/docs/desktop-handoff.md
+!/docs/Desktop_Leader_Handoff.docx
