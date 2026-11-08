@@ -44,13 +44,16 @@ target/
 application-local.properties
 .env
 
-# Keep existing tests/docs local; publish only the TODO 32 smoke test and screenshots.
+# Keep existing tests/docs local; publish the selected checks and documentation.
 /src/test/**
 !/src/test/java/
 !/src/test/java/com/
 !/src/test/java/com/fu/
 !/src/test/java/com/fu/cinema/
 !/src/test/java/com/fu/cinema/FuCinemaTicketSystemApplicationTests.java
+!/src/test/java/com/fu/cinema/desktop/
+!/src/test/java/com/fu/cinema/desktop/DashboardFacadeTest.java
 /docs/**
+!/docs/TODO37-dashboard.md
 !/docs/images/
 !/docs/images/*.png
