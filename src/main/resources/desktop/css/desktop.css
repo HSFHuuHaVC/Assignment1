@@ -1,0 +1,124 @@
+/* Chương — shared foundation, login and main shell. */
+.root { -fx-font-family: "Segoe UI"; -fx-font-size: 13px; -fx-background-color: #f3f4f6; }
+.sidebar { -fx-background-color: #172033; -fx-padding: 22 14; -fx-pref-width: 220; }
+.sidebar .button { -fx-background-color: transparent; -fx-text-fill: #e5e7eb; -fx-alignment: center-left; -fx-padding: 11 12; }
+.sidebar .button:hover { -fx-background-color: #334155; }
+.brand { -fx-text-fill: #f43f5e; -fx-font-size: 23px; -fx-font-weight: bold; }
+.sidebar-caption { -fx-text-fill: #cbd5e1; -fx-padding: 0 0 14 2; }
+.button { -fx-cursor: hand; }
+.button.primary { -fx-background-color: #be123c; -fx-text-fill: white; -fx-font-weight: bold; }
+.button.primary:hover { -fx-background-color: #9f1239; }
+.status-bar { -fx-padding: 10 16; -fx-background-color: white; }
+.page { -fx-padding: 24; -fx-spacing: 12; }
+.page-title { -fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #172033; }
+.login { -fx-background-color: #172033; -fx-padding: 30; }
+.login-card { -fx-background-color: white; -fx-padding: 36; -fx-background-radius: 12; -fx-max-width: 420; }
+.login .brand { -fx-font-size: 30px; }
+.login-caption { -fx-text-fill: #64748b; -fx-wrap-text: true; }
+.login-card .text-field { -fx-padding: 12; }
+.login-card .button { -fx-padding: 12; }
+.text-field:error, .combo-box:error, .date-picker:error, .spinner:error, .text-area:error {
+    -fx-border-color: #d32f2f; -fx-border-width: 1.5;
+}
+/* Hà — SeatMapView, counter-sale and booking. */
+.screen          { -fx-background-color: #9ca3af; -fx-text-fill: white; -fx-alignment: center; -fx-padding: 4; }
+.seat            { -fx-min-width: 34; -fx-min-height: 30; -fx-background-color: #e5e7eb; -fx-background-radius: 6 6 2 2; }
+.seat:hover      { -fx-background-color: #d1d5db; }
+.seat:selected   { -fx-background-color: #16a34a; -fx-text-fill: white; }
+.seat:sold       { -fx-background-color: #6b7280; -fx-text-fill: white; -fx-opacity: 1; }   /* ghi đè mờ 0.4 mặc định của :disabled */
+.legend-swatch   { -fx-min-width: 16; -fx-min-height: 16; -fx-background-radius: 3; }
+.legend-free     { -fx-background-color: #e5e7eb; }
+.legend-selected { -fx-background-color: #16a34a; }
+.legend-sold     { -fx-background-color: #6b7280; }
+.total           { -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #be123c; }
+.st-pending      { -fx-text-fill: #b45309; -fx-font-weight: bold; }
+.st-confirmed    { -fx-text-fill: #15803d; -fx-font-weight: bold; }
+.st-cancelled    { -fx-text-fill: #b91c1c; }
+
+/* Quyền — genre, movie list and movie dialog. */
+.genre-card, .movie-card {
+    -fx-background-color: white;
+    -fx-padding: 18;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 6, 0, 0, 2);
+}
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+.page-caption {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+}
+.form-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #334155;
+    -fx-font-size: 12px;
+}
+.button-danger {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.button-danger:hover {
+    -fx-background-color: #dc2626;
+}
+.empty-placeholder {
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 14px;
+}
+.search-toolbar {
+    -fx-background-color: white;
+    -fx-padding: 12 16;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 4, 0, 0, 1);
+}
+.table-row-cell:stopped {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #94a3b8;
+}
+.table-row-cell:stopped .text {
+    -fx-fill: #94a3b8;
+}
+.badge-status {
+    -fx-padding: 3 8;
+    -fx-background-radius: 12;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.badge-showing { -fx-background-color: #dcfce7; -fx-text-fill: #15803d; }
+.badge-coming { -fx-background-color: #e0f2fe; -fx-text-fill: #0369a1; }
+.badge-stopped { -fx-background-color: #f1f5f9; -fx-text-fill: #64748b; }
+.badge-rating {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #b45309;
+    -fx-padding: 2 6;
+    -fx-background-radius: 4;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* Long — dashboard, schedule and report. */
+.dashboard {
+    -fx-background-color: #f5f7fb;
+}
+
+.dashboard .dashboard-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.dashboard .kpi {
+    -fx-padding: 16;
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #dce3ef;
+    -fx-border-radius: 8;
+}
+
+.dashboard .kpi-value {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #245cb0;
+}
