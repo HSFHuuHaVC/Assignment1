@@ -7,6 +7,8 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -17,6 +19,15 @@ import java.util.function.Consumer;
 public class FxAsync implements DisposableBean {
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private final Set<Task<?>> pending = ConcurrentHashMap.newKeySet();
+    // Accessed only on the FX thread, alongside the controls themselves.
+    private final Map<Node, BusyState> busyControls = new IdentityHashMap<>();
+
+    private static final class BusyState {
+        private final boolean originallyDisabled;
+        private int activeTasks;
+
+        private BusyState(boolean originallyDisabled) { this.originallyDisabled = originallyDisabled; }
+    }
 
     public <T> Task<T> run(Callable<T> work, Consumer<T> onSuccess) {
         return run(work, onSuccess, AlertUtil::showError, null);
@@ -38,15 +49,23 @@ public class FxAsync implements DisposableBean {
         Task<T> task = new Task<>() {
             @Override protected T call() throws Exception { return work.call(); }
         };
-        boolean wasDisabled = busy != null && busy.isDisable();
         Runnable release = () -> {
-            pending.remove(task);
-            if (busy != null) busy.setDisable(wasDisabled);
+            if (!pending.remove(task)) return;
+            if (busy != null) {
+                BusyState state = busyControls.get(busy);
+                if (--state.activeTasks == 0) {
+                    busyControls.remove(busy);
+                    busy.setDisable(state.originallyDisabled);
+                }
+            }
         };
         task.setOnSucceeded(event -> { release.run(); onSuccess.accept(task.getValue()); });
         task.setOnFailed(event -> { release.run(); onError.accept(task.getException()); });
         task.setOnCancelled(event -> release.run());
-        if (busy != null) busy.setDisable(true);
+        if (busy != null) {
+            busyControls.computeIfAbsent(busy, node -> new BusyState(node.isDisable())).activeTasks++;
+            busy.setDisable(true);
+        }
         pending.add(task);
         try {
             executor.execute(task);

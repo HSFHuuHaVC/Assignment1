@@ -156,11 +156,23 @@ class DesktopQuyenUiTests {
                 });
                 settle();
 
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+                while (onFx(() -> {
+                    TableView<?> table = (TableView<?>) stage.getScene().lookup("#tableMovies");
+                    return table.isDisabled() || table.getItems().isEmpty();
+                }) && System.nanoTime() < deadline) {
+                    Thread.sleep(20);
+                }
+
                 onFx(() -> {
                     stage.getScene().getRoot().applyCss();
                     stage.getScene().getRoot().layout();
                     TableView<?> table = (TableView<?>) stage.getScene().lookup("#tableMovies");
                     assertNotNull(table);
+                    assertFalse(table.isDisabled(), "Movie table must be enabled after overlapping startup loads");
+                    assertFalse(table.getItems().isEmpty());
+                    table.getSelectionModel().selectFirst();
+                    assertNotNull(table.getSelectionModel().getSelectedItem());
                     TextField txtKw = (TextField) stage.getScene().lookup("#txtKeyword");
                     assertNotNull(txtKw);
                     ComboBox<?> cmbGenre = (ComboBox<?>) stage.getScene().lookup("#cmbGenre");
