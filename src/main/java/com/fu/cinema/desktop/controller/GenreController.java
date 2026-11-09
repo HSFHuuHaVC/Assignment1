@@ -60,7 +60,7 @@ public class GenreController {
         fxAsync.run(
                 genreFacade::getAllGenres,
                 this::populateGenres,
-                tableGenres
+                null
         );
     }
 

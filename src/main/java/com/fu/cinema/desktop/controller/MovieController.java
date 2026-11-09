@@ -65,9 +65,11 @@ public class MovieController {
     private final AtomicLong searchSequence = new AtomicLong(0);
     private final PauseTransition debounce = new PauseTransition(Duration.millis(300));
     private boolean updatingPagination = false;
+    private boolean initializing = true;
 
     @FXML
     private void initialize() {
+        initializing = true;
         setupColumns();
         setupRowFactory();
         setupFilters();
@@ -75,6 +77,7 @@ public class MovieController {
         setupPagination();
 
         loadGenreOptions();
+        initializing = false;
         loadPage(0);
     }
 
@@ -167,7 +170,9 @@ public class MovieController {
                 new MovieStatusOption(MovieStatus.STOPPED, "Ngừng chiếu")
         );
         cmbStatus.getSelectionModel().selectFirst();
-        cmbStatus.valueProperty().addListener((obs, o, n) -> resetPageAndLoad());
+        cmbStatus.valueProperty().addListener((obs, o, n) -> {
+            if (!initializing) resetPageAndLoad();
+        });
 
         // Sort filter
         cmbSort.getItems().setAll(
@@ -176,7 +181,9 @@ public class MovieController {
                 new SortOption("duration", "Thời lượng (giảm dần)")
         );
         cmbSort.getSelectionModel().selectFirst();
-        cmbSort.valueProperty().addListener((obs, o, n) -> resetPageAndLoad());
+        cmbSort.valueProperty().addListener((obs, o, n) -> {
+            if (!initializing) resetPageAndLoad();
+        });
 
         // Genre combobox converter & listener
         cmbGenre.setConverter(new StringConverter<>() {
@@ -187,7 +194,9 @@ public class MovieController {
             @Override
             public GenreOption fromString(String string) { return null; }
         });
-        cmbGenre.valueProperty().addListener((obs, o, n) -> resetPageAndLoad());
+        cmbGenre.valueProperty().addListener((obs, o, n) -> {
+            if (!initializing) resetPageAndLoad();
+        });
     }
 
     private void setupDebounce() {
@@ -245,7 +254,7 @@ public class MovieController {
                         renderPageResult(result);
                     }
                 },
-                tableMovies
+                null
         );
     }
 
@@ -297,7 +306,7 @@ public class MovieController {
                     }
                     loadPage(pagination.getCurrentPageIndex());
                 },
-                tableMovies
+                null
         );
     }
 
