@@ -191,47 +191,35 @@ class DesktopQuyenUiTests {
 
             var manager = context.getBean(SceneManager.class);
             var session = context.getBean(DesktopSession.class);
-
-            Stage stage = onFx(() -> {
-                session.login(new SessionUser(1L, null, "Administrator", Role.ADMIN));
-                Stage window = new Stage();
-                manager.init(window);
-
+            // Preload the options off the FX thread, just like MovieController.
+            var genres = context.getBean(com.fu.cinema.desktop.facade.MovieFacade.class).getGenreOptions();
+            var failure = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+            onFx(() -> {
+                Stage owner = new Stage();
+                owner.setScene(new Scene(new javafx.scene.layout.StackPane()));
+                owner.show();
                 SceneManager.Loaded<MovieDialogController> loaded = manager.load(View.MOVIE_DIALOG);
-                window.setScene(new Scene(loaded.root()));
-                loaded.controller().init(window, null);
-                window.show();
-                return window;
-            });
-
-            try {
-                settle();
-                onFx(() -> {
-                    stage.getScene().getRoot().applyCss();
-                    stage.getScene().getRoot().layout();
-                    snapshot(stage, "movie-dialog");
-
-                    TextField txtTitle = (TextField) stage.getScene().lookup("#txtTitle");
-                    assertNotNull(txtTitle);
-                    Spinner<?> spnDuration = (Spinner<?>) stage.getScene().lookup("#spnDuration");
-                    assertNotNull(spnDuration);
-                    Button btnCancel = (Button) stage.getScene().lookup("#btnCancel");
-                    assertNotNull(btnCancel);
-                    Button btnSave = (Button) stage.getScene().lookup("#btnSave");
-                    assertNotNull(btnSave);
-
-                    // Test Cancel closes stage
-                    btnCancel.fire();
-                    assertFalse(stage.isShowing(), "Cancel must close the dialog");
-                    return null;
+                Platform.runLater(() -> {
+                    try {
+                        var dialogRoot = loaded.root().getScene().getRoot();
+                        assertNotNull(dialogRoot.lookup("#txtTitle"));
+                        assertNotNull(dialogRoot.lookup("#spnDuration"));
+                        assertNotNull(dialogRoot.lookup("#btnSave"));
+                    } catch (Throwable error) {
+                        failure.set(error);
+                    } finally {
+                        ((Button) loaded.root().getScene().lookup("#btnCancel")).fire();
+                    }
                 });
-            } finally {
-                onFx(() -> {
-                    if (stage.isShowing()) stage.close();
+                try {
+                    assertTrue(loaded.controller().open(owner, new com.fu.cinema.dto.MovieForm(), genres).isEmpty());
+                    if (failure.get() != null) throw new AssertionError(failure.get());
+                } finally {
+                    owner.close();
                     session.logout();
-                    return null;
-                });
-            }
+                }
+                return null;
+            });
         }
     }
 }

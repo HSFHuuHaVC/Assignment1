@@ -2,7 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+<VBox fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.fu.cinema.desktop.controller.MovieDialogController"
       styleClass="movie-card" spacing="14" prefWidth="560">
 
@@ -61,9 +61,4 @@
         </VBox>
     </VBox>
 
-    <Separator/>
-    <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button fx:id="btnCancel" text="Hủy" onAction="#onCancel"/>
-        <Button fx:id="btnSave" text="Lưu" onAction="#onSave" styleClass="primary"/>
-    </HBox>
 </VBox>

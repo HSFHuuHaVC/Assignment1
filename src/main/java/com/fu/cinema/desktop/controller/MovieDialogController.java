@@ -1,71 +1,51 @@
 package com.fu.cinema.desktop.controller;
 
-import com.fu.cinema.desktop.facade.MovieFacade;
 import com.fu.cinema.desktop.model.GenreOption;
-import com.fu.cinema.desktop.util.AlertUtil;
-import com.fu.cinema.desktop.util.FxAsync;
 import com.fu.cinema.desktop.util.FxValidator;
 import com.fu.cinema.dto.MovieForm;
 import com.fu.cinema.enums.AgeRating;
 import com.fu.cinema.enums.MovieStatus;
-import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
+import javafx.stage.Window;
 import javafx.util.StringConverter;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @Scope("prototype")
 @RequiredArgsConstructor
 public class MovieDialogController {
-    private final MovieFacade movieFacade;
     private final FxValidator fxValidator;
-    private final FxAsync fxAsync;
-
+    @FXML private VBox root;
     @FXML private Label lblDialogTitle;
-    @FXML private TextField txtTitle;
-    @FXML private TextField txtDirector;
+    @FXML private TextField txtTitle, txtDirector, txtPosterUrl;
     @FXML private Spinner<Integer> spnDuration;
     @FXML private DatePicker dpReleaseDate;
     @FXML private ComboBox<AgeRating> cmbAgeRating;
     @FXML private ComboBox<GenreOption> cmbGenre;
     @FXML private ComboBox<MovieStatus> cmbStatus;
-    @FXML private TextField txtPosterUrl;
     @FXML private TextArea txtDescription;
-    @FXML private Button btnSave;
-    @FXML private Button btnCancel;
-
-    private Stage dialogStage;
     private Long editingMovieId;
-    @Getter private boolean saved = false;
 
-    @FXML
-    private void initialize() {
-        // Spinner 30 - 300 minutes, default 120, step 5
-        SpinnerValueFactory.IntegerSpinnerValueFactory valueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(30, 300, 120, 5);
-        spnDuration.setValueFactory(valueFactory);
+    @FXML private void initialize() {
+        // Let MovieForm's @Min(30)/@Max(300) report invalid durations, as in the guide.
+        spnDuration.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 999, 120));
         spnDuration.setEditable(true);
-
-        // Allow direct manual text typing in Spinner editor
         spnDuration.getEditor().setOnAction(e -> commitSpinner());
         spnDuration.focusedProperty().addListener((obs, oldV, focused) -> {
             if (!focused) commitSpinner();
         });
-
-        // ComboBox values
-        cmbAgeRating.setItems(FXCollections.observableArrayList(AgeRating.values()));
-        cmbStatus.setItems(FXCollections.observableArrayList(MovieStatus.values()));
-
+        cmbAgeRating.getItems().setAll(AgeRating.values());
+        cmbStatus.getItems().setAll(MovieStatus.values());
         cmbStatus.setConverter(new StringConverter<>() {
             @Override public String toString(MovieStatus status) {
                 if (status == null) return "";
@@ -77,7 +57,6 @@ public class MovieDialogController {
             }
             @Override public MovieStatus fromString(String string) { return null; }
         });
-
         cmbGenre.setConverter(new StringConverter<>() {
             @Override public String toString(GenreOption option) {
                 return option != null ? option.genreName() : "";
@@ -86,132 +65,80 @@ public class MovieDialogController {
         });
     }
 
-    public void init(Stage stage, Long movieId) {
-        this.dialogStage = stage;
-        this.editingMovieId = movieId;
-        this.saved = false;
-
-        List<GenreOption> genres = movieFacade.getGenreOptions();
-        cmbGenre.setItems(FXCollections.observableArrayList(genres));
-
-        if (movieId == null) {
-            lblDialogTitle.setText("Thêm phim mới");
-            btnSave.setText("Thêm mới");
-            dpReleaseDate.setValue(LocalDate.now());
-            cmbAgeRating.setValue(AgeRating.P);
-            cmbStatus.setValue(MovieStatus.SHOWING);
-            if (!genres.isEmpty()) cmbGenre.setValue(genres.getFirst());
-            txtPosterUrl.setText("/images/posters/");
-        } else {
-            lblDialogTitle.setText("Chỉnh sửa phim");
-            btnSave.setText("Lưu thay đổi");
-            loadExistingMovie(movieId);
+    /** The caller loads form/options through FxAsync before opening this UI-only dialog. */
+    public Optional<MovieForm> open(Window owner, MovieForm form, List<GenreOption> genres) {
+        editingMovieId = form.getMovieId();
+        cmbGenre.getItems().setAll(genres);
+        fill(form);
+        Dialog<MovieForm> dialog = new Dialog<>();
+        if (owner != null) {
+            dialog.initOwner(owner);
+            if (owner.getScene() != null) {
+                dialog.getDialogPane().getStylesheets().setAll(owner.getScene().getStylesheets());
+            }
         }
+        dialog.setTitle(editingMovieId == null ? "Thêm phim mới" : "Chỉnh sửa phim");
+        lblDialogTitle.setText(dialog.getTitle());
+        dialog.getDialogPane().setContent(root);
+        ButtonType save = new ButtonType("Lưu", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(save, ButtonType.CANCEL);
+        dialog.getDialogPane().lookupButton(save).setId("btnSave");
+        dialog.getDialogPane().lookupButton(ButtonType.CANCEL).setId("btnCancel");
+        dialog.getDialogPane().lookupButton(save).getStyleClass().add("primary");
+        dialog.getDialogPane().lookupButton(save).addEventFilter(ActionEvent.ACTION, event -> {
+            commitSpinner();
+            if (!fxValidator.mark(fxValidator.validate(toForm()), fields())) event.consume();
+        });
+        dialog.setResultConverter(button -> button == save ? toForm() : null);
+        return dialog.showAndWait();
     }
 
-    private void loadExistingMovie(Long movieId) {
-        try {
-            MovieForm form = movieFacade.getMovieForm(movieId);
-            txtTitle.setText(form.getTitle());
-            txtDirector.setText(form.getDirector());
-            if (form.getDuration() != null) {
-                spnDuration.getValueFactory().setValue(Math.clamp(form.getDuration(), 30, 300));
-            }
-            dpReleaseDate.setValue(form.getReleaseDate());
-            cmbAgeRating.setValue(form.getAgeRating());
-            cmbStatus.setValue(form.getStatus());
-            txtPosterUrl.setText(form.getPosterUrl());
-            txtDescription.setText(form.getDescription());
-
-            if (form.getGenreId() != null) {
-                cmbGenre.getItems().stream()
-                        .filter(g -> form.getGenreId().equals(g.genreId()))
-                        .findFirst()
-                        .ifPresent(cmbGenre::setValue);
-            }
-        } catch (Exception ex) {
-            AlertUtil.showError(ex);
-            dialogStage.close();
+    private void fill(MovieForm form) {
+        boolean creating = editingMovieId == null;
+        txtTitle.setText(form.getTitle());
+        txtDirector.setText(form.getDirector());
+        spnDuration.getValueFactory().setValue(form.getDuration() == null ? 120 : form.getDuration());
+        dpReleaseDate.setValue(creating && form.getReleaseDate() == null ? LocalDate.now() : form.getReleaseDate());
+        cmbAgeRating.setValue(creating && form.getAgeRating() == null ? AgeRating.P : form.getAgeRating());
+        cmbStatus.setValue(creating && form.getStatus() == null ? MovieStatus.SHOWING : form.getStatus());
+        txtPosterUrl.setText(creating && form.getPosterUrl() == null ? "/images/posters/" : form.getPosterUrl());
+        txtDescription.setText(form.getDescription());
+        cmbGenre.setValue(null);
+        if (form.getGenreId() != null) {
+            cmbGenre.getItems().stream().filter(g -> form.getGenreId().equals(g.genreId()))
+                    .findFirst().ifPresent(cmbGenre::setValue);
+        } else if (creating && !cmbGenre.getItems().isEmpty()) {
+            cmbGenre.getSelectionModel().selectFirst();
         }
+        fxValidator.mark(Map.of(), fields());
+    }
+
+    private Map<String, Control> fields() {
+        return Map.of("title", txtTitle, "director", txtDirector, "duration", spnDuration,
+                "releaseDate", dpReleaseDate, "ageRating", cmbAgeRating, "genreId", cmbGenre,
+                "status", cmbStatus, "posterUrl", txtPosterUrl, "description", txtDescription);
     }
 
     private void commitSpinner() {
         try {
-            spnDuration.commitValue();
-        } catch (Exception ex) {
-            try {
-                String text = spnDuration.getEditor().getText().trim();
-                int parsed = Integer.parseInt(text);
-                spnDuration.getValueFactory().setValue(parsed);
-            } catch (NumberFormatException ignored) {
-            }
+            spnDuration.getValueFactory().setValue(Integer.parseInt(spnDuration.getEditor().getText().trim()));
+        } catch (NumberFormatException ignored) {
+            spnDuration.getEditor().setText(String.valueOf(spnDuration.getValue()));
         }
     }
 
-    @FXML
-    private void onSave() {
-        commitSpinner();
-
+    private MovieForm toForm() {
         MovieForm form = new MovieForm();
         form.setMovieId(editingMovieId);
-        form.setTitle(txtTitle.getText() != null ? txtTitle.getText().trim() : "");
-        form.setDirector(txtDirector.getText() != null ? txtDirector.getText().trim() : "");
+        form.setTitle(txtTitle.getText().trim());
+        form.setDirector(txtDirector.getText().trim());
         form.setDuration(spnDuration.getValue());
         form.setReleaseDate(dpReleaseDate.getValue());
         form.setAgeRating(cmbAgeRating.getValue());
-        form.setGenreId(cmbGenre.getValue() != null ? cmbGenre.getValue().genreId() : null);
+        form.setGenreId(cmbGenre.getValue() == null ? null : cmbGenre.getValue().genreId());
         form.setStatus(cmbStatus.getValue());
-        form.setPosterUrl(txtPosterUrl.getText() != null ? txtPosterUrl.getText().trim() : "");
-        form.setDescription(txtDescription.getText() != null ? txtDescription.getText().trim() : "");
-
-        Map<String, String> errors = fxValidator.validate(form);
-
-        Map<String, Control> fieldMap = new HashMap<>();
-        fieldMap.put("title", txtTitle);
-        fieldMap.put("director", txtDirector);
-        fieldMap.put("duration", spnDuration);
-        fieldMap.put("releaseDate", dpReleaseDate);
-        fieldMap.put("ageRating", cmbAgeRating);
-        fieldMap.put("genreId", cmbGenre);
-        fieldMap.put("status", cmbStatus);
-        fieldMap.put("posterUrl", txtPosterUrl);
-        fieldMap.put("description", txtDescription);
-
-        boolean valid = fxValidator.mark(errors, fieldMap);
-        if (!valid) {
-            // Keep dialog open on validation error (TC-D09)
-            AlertUtil.warn("Vui lòng kiểm tra và sửa các thông tin chưa hợp lệ.");
-            return;
-        }
-
-        fxValidator.mark(Map.of(), fieldMap);
-
-        if (editingMovieId == null) {
-            fxAsync.runVoid(
-                    () -> movieFacade.createMovie(form),
-                    () -> {
-                        saved = true;
-                        AlertUtil.info("Thêm phim mới thành công!");
-                        dialogStage.close();
-                    },
-                    btnSave
-            );
-        } else {
-            fxAsync.runVoid(
-                    () -> movieFacade.updateMovie(editingMovieId, form),
-                    () -> {
-                        saved = true;
-                        AlertUtil.info("Cập nhật thông tin phim thành công!");
-                        dialogStage.close();
-                    },
-                    btnSave
-            );
-        }
-    }
-
-    @FXML
-    private void onCancel() {
-        saved = false;
-        dialogStage.close();
+        form.setPosterUrl(txtPosterUrl.getText().trim());
+        form.setDescription(txtDescription.getText().trim());
+        return form;
     }
 }

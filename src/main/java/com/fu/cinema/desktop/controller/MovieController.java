@@ -8,6 +8,7 @@ import com.fu.cinema.desktop.navigation.SceneManager;
 import com.fu.cinema.desktop.navigation.View;
 import com.fu.cinema.desktop.util.AlertUtil;
 import com.fu.cinema.desktop.util.FxAsync;
+import com.fu.cinema.dto.MovieForm;
 import com.fu.cinema.enums.MovieStatus;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -17,11 +18,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 import lombok.RequiredArgsConstructor;
@@ -302,27 +300,29 @@ public class MovieController {
     }
 
     private void openMovieDialog(Long movieId) {
+        var owner = tableMovies.getScene().getWindow();
+        fxAsync.run(() -> new MovieDialogData(movieFacade.getGenreOptions(),
+                movieId == null ? new MovieForm() : movieFacade.getMovieForm(movieId)),
+                data -> showMovieDialog(owner, data), tableMovies);
+    }
+
+    private void showMovieDialog(javafx.stage.Window owner, MovieDialogData data) {
         try {
             SceneManager.Loaded<MovieDialogController> loaded = sceneManager.load(View.MOVIE_DIALOG);
-            Stage dialogStage = new Stage();
-            dialogStage.initModality(Modality.APPLICATION_MODAL);
-            if (sceneManager.getStage() != null) {
-                dialogStage.initOwner(sceneManager.getStage());
-            }
-            dialogStage.setTitle(movieId == null ? "Thêm phim mới" : "Chỉnh sửa phim");
-            dialogStage.setScene(new Scene(loaded.root()));
-            dialogStage.setResizable(false);
-
-            loaded.controller().init(dialogStage, movieId);
-            dialogStage.showAndWait();
-
-            if (loaded.controller().isSaved()) {
-                loadPage(pagination.getCurrentPageIndex());
-            }
+            loaded.controller().open(owner, data.form(), data.genres()).ifPresent(form ->
+                    fxAsync.runVoid(() -> {
+                        if (form.getMovieId() == null) movieFacade.createMovie(form);
+                        else movieFacade.updateMovie(form.getMovieId(), form);
+                    }, () -> {
+                        AlertUtil.info("Đã lưu phim thành công!");
+                        loadPage(pagination.getCurrentPageIndex());
+                    }, tableMovies));
         } catch (Exception ex) {
             AlertUtil.showError(ex);
         }
     }
+
+    private record MovieDialogData(List<GenreOption> genres, MovieForm form) { }
 
     public record MovieStatusOption(MovieStatus status, String label) {
         @Override public String toString() { return label; }
