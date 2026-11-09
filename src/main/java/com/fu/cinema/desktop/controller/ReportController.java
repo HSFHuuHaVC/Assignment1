@@ -155,7 +155,7 @@ public class ReportController {
 
         ReportData snapshot = data.get();
         fxAsync.runVoid(() -> CsvExporter.write(file.toPath(), snapshot),
-                () -> AlertUtil.info("Đã xuất báo cáo thành công vào file: " + file.getName()), btnExport);
+                () -> AlertUtil.info("Đã xuất báo cáo thành công vào file: " + file.getName()), btnGenerate);
     }
 }
 
