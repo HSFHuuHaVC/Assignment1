@@ -20,6 +20,7 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -128,9 +129,16 @@ public class ReportController {
         for (int i = 0; i < series.getData().size(); i++) {
             RevenueRow r = d.revenue().get(i);
             var item = series.getData().get(i);
+            Tooltip tooltip = new Tooltip("%s: %d vé – %s".formatted(r.title(), r.tickets(), MoneyUtil.format(r.revenue())));
+            tooltip.setShowDelay(Duration.millis(150));
             if (item.getNode() != null) {
-                Tooltip.install(item.getNode(),
-                        new Tooltip("%s: %d vé – %s".formatted(r.title(), r.tickets(), MoneyUtil.format(r.revenue()))));
+                Tooltip.install(item.getNode(), tooltip);
+            } else {
+                item.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                    if (newNode != null) {
+                        Tooltip.install(newNode, tooltip);
+                    }
+                });
             }
         }
 
