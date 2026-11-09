@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.fu.cinema.desktop.controller.ReportController"
+      styleClass="page" spacing="16">
+
+    <!-- Header & Bộ lọc thời gian -->
+    <HBox alignment="CENTER_LEFT" spacing="14" styleClass="search-toolbar">
+        <Label text="Báo cáo Doanh thu" styleClass="page-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label text="Từ ngày:" styleClass="form-label"/>
+        <DatePicker fx:id="dpStart" prefWidth="135"/>
+        <Label text="Đến ngày:" styleClass="form-label"/>
+        <DatePicker fx:id="dpEnd" prefWidth="135"/>
+        <Button fx:id="btnGenerate" text="Xem báo cáo" onAction="#onGenerate" styleClass="primary"/>
+        <Button fx:id="btnExport" text="Xuất CSV" onAction="#onExport"/>
+    </HBox>
+
+    <!-- Thống kê tổng số và thông báo rỗng -->
+    <HBox alignment="CENTER_LEFT" spacing="16">
+        <Label fx:id="lblTotals" text="Tổng: 0 đơn · 0 vé · 0 ₫" styleClass="total"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblEmpty" text="Không có dữ liệu trong khoảng thời gian này"
+               styleClass="empty-placeholder" visible="false" managed="false"/>
+    </HBox>
+
+    <!-- Khu vực biểu đồ -->
+    <HBox spacing="16" prefHeight="260" minHeight="220">
+        <!-- Biểu đồ cột Doanh thu theo phim -->
+        <VBox HBox.hgrow="ALWAYS" styleClass="schedule-card">
+            <BarChart fx:id="chartRevenue" title="Doanh thu theo phim (VNĐ)" legendVisible="false"
+                      animated="false" VBox.vgrow="ALWAYS">
+                <xAxis><CategoryAxis label="Phim"/></xAxis>
+                <yAxis><NumberAxis label="Doanh thu" minorTickVisible="false"/></yAxis>
+            </BarChart>
+        </VBox>
+
+        <!-- Biểu đồ tròn Vé theo phim -->
+        <VBox prefWidth="380" minWidth="320" styleClass="schedule-card">
+            <PieChart fx:id="pieTickets" title="Tỷ lệ vé bán ra" animated="false" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </HBox>
+
+    <!-- Bảng chi tiết đơn đặt vé -->
+    <VBox spacing="8" VBox.vgrow="ALWAYS">
+        <Label text="Chi tiết đơn đặt vé" styleClass="section-title"/>
+        <TableView fx:id="tableBookings" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colId" text="Mã đơn" prefWidth="80"/>
+                <TableColumn fx:id="colDate" text="Ngày đặt" prefWidth="150"/>
+                <TableColumn fx:id="colCustomer" text="Khách hàng" prefWidth="180"/>
+                <TableColumn fx:id="colMovie" text="Phim" prefWidth="240"/>
+                <TableColumn fx:id="colTotal" text="Tổng tiền" prefWidth="130"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+            <placeholder>
+                <Label text="Không có đơn đặt vé nào" styleClass="empty-placeholder"/>
+            </placeholder>
+        </TableView>
+    </VBox>
+
+</VBox>
+
