@@ -6,10 +6,10 @@ labels: "type: feature"
 ---
 
 ## Mô tả
-<!-- Chức năng gì, cho vai trò nào (Admin/Customer) -->
+<!-- Chức năng gì, cho vai trò nào (Admin/Customer/nhân viên desktop) -->
 
 ## TODO liên quan
-TODO ...
+TODO ... (Assignment 2: TODO 33–46; mã kế hoạch I20–I34 không phải số issue GitHub)
 
 ## Tiêu chí chấp nhận
 - [ ] ...
@@ -19,4 +19,4 @@ TODO ...
 BR-...
 
 ## Ghi chú kỹ thuật
-<!-- Repository/service/controller/template dự kiến, phụ thuộc issue khác (#...) -->
+<!-- File/phạm vi, owner, contract và phụ thuộc thật. Desktop: Controller → Facade → Service có sẵn; UI dùng record. -->

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.fu.cinema.desktop.controller.MovieController"
+      styleClass="page" spacing="14">
+
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <VBox spacing="4">
+            <Label text="Quản lý Phim" styleClass="page-title"/>
+            <Label fx:id="lblSummary" text="Tổng cộng: 0 phim" styleClass="page-caption"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnAdd" text="+ Thêm phim mới" onAction="#onAddMovie" styleClass="primary"/>
+    </HBox>
+
+    <HBox styleClass="search-toolbar" spacing="12" alignment="CENTER_LEFT">
+        <TextField fx:id="txtKeyword" promptText="🔍 Tìm theo tên phim..." prefWidth="240"/>
+        <ComboBox fx:id="cmbGenre" prefWidth="180"/>
+        <ComboBox fx:id="cmbStatus" prefWidth="170"/>
+        <ComboBox fx:id="cmbSort" prefWidth="230"/>
+        <Button fx:id="btnResetFilter" text="Đặt lại" onAction="#onResetFilter"/>
+    </HBox>
+
+    <TableView fx:id="tableMovies" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId" text="Mã" prefWidth="65"/>
+            <TableColumn fx:id="colTitle" text="Tên phim" prefWidth="250"/>
+            <TableColumn fx:id="colGenre" text="Thể loại" prefWidth="130"/>
+            <TableColumn fx:id="colDuration" text="Thời lượng" prefWidth="100"/>
+            <TableColumn fx:id="colReleaseDate" text="Khởi chiếu" prefWidth="110"/>
+            <TableColumn fx:id="colAgeRating" text="Độ tuổi" prefWidth="80"/>
+            <TableColumn fx:id="colStatus" text="Trạng thái" prefWidth="140"/>
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+        <placeholder>
+            <Label text="Không tìm thấy phim phù hợp" styleClass="empty-placeholder"/>
+        </placeholder>
+    </TableView>
+
+    <HBox alignment="CENTER">
+        <Pagination fx:id="pagination" maxPageIndicatorCount="7"/>
+    </HBox>
+</VBox>

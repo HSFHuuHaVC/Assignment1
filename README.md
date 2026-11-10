@@ -1,6 +1,6 @@
 # FU Cinema Ticket System
 
-Website quản lý rạp chiếu phim và đặt vé trực tuyến cho Assignment 1, môn HSF302. Ứng dụng hỗ trợ khách xem phim, chọn ghế, đặt/hủy vé, quản lý hồ sơ và đánh giá phim; Admin quản lý khách hàng, phim, phòng, suất chiếu, đơn đặt vé và báo cáo doanh thu.
+Hệ thống quản lý rạp chiếu phim môn HSF302 gồm website đặt vé trực tuyến (Assignment 1) và ứng dụng desktop bán vé tại quầy (Assignment 2). Ứng dụng hỗ trợ khách xem phim, chọn ghế, đặt/hủy vé, quản lý hồ sơ và đánh giá phim; Admin quản lý khách hàng, phim, phòng, suất chiếu, đơn đặt vé và báo cáo doanh thu.
 
 ## Công nghệ và yêu cầu
 
@@ -88,7 +88,7 @@ Admin đăng nhập được đưa tới `/admin`; Customer về `/`. Đăng xu�
 
 ## Chạy và kiểm thử với H2
 
-Smoke test trong repository khởi động Spring context bằng profile `test`, kiểm tra ứng dụng nạp được bean, mapping và repository mà không cần SQL Server:
+Bộ test trong repository gồm smoke test web và test desktop/Facade. Các test tích hợp dùng profile `test` và H2 để kiểm tra service, mapping và quyền truy cập mà không cần SQL Server:
 
 ```powershell
 .\mvnw.cmd verify
@@ -102,7 +102,7 @@ Smoke test trong repository khởi động Spring context bằng profile `test`,
 
 Mở **http://localhost:8081/**. H2 dùng database trong bộ nhớ; dữ liệu mất khi dừng tiến trình. Profile `test` dùng `ddl-auto=create-drop`: chỉ dùng cho kiểm thử. Không trỏ profile này vào database có dữ liệu cần giữ.
 
-Smoke test không thay thế kiểm thử nghiệp vụ. Query native Q11 của dashboard dùng hàm SQL Server và cần được xác nhận trên SQL Server. Các test nghiệp vụ cũ và tài liệu kiểm thử cá nhân tiếp tục được giữ cục bộ; chỉ smoke test TODO 32 và ảnh minh họa được thêm lại vào Git.
+H2 không thay thế nghiệm thu trên SQL Server, đặc biệt với tranh chấp ghế giữa web và desktop. Một số test Assignment 1 cũ có thể còn trên máy nhưng bị Git ignore; chúng không thuộc bộ test trên bản clone sạch.
 
 ## Các màn hình chính
 
@@ -175,3 +175,85 @@ I01–I19 là mã kế hoạch; số issue thật trên GitHub có thể khác. 
 README này không xác nhận tag/release đã được phát hành. Kiểm tra trạng thái thực tế tại [GitHub Releases](https://github.com/HSFHuuHaVC/Assignment1/releases).
 
 Biên bản kiểm thử và các bước phát hành còn lại: [release.md](release.md).
+
+## Ứng dụng Desktop Assignment 2
+
+Ứng dụng quầy vé dùng JavaFX **21.0.5**, FXML/CSS, **JDK 21** và Spring Boot **4.1.1**. Các màn hình TODO 33–45 đã được tích hợp: đăng nhập ADMIN, dashboard, thể loại, phim, phòng và suất chiếu, bán vé, quản lý đơn, báo cáo doanh thu và xuất CSV. Desktop gọi Facade → Service và dùng chung SQL Server `FUCinemaTicketDB` với website.
+
+### Chạy web và desktop
+
+Clone repository, chuẩn bị SQL Server và tạo `application-local.properties` theo phần cài đặt bên trên. Build tại thư mục chứa `pom.xml`:
+
+```powershell
+.\mvnw.cmd clean verify
+```
+
+Chạy hai terminal riêng:
+
+```powershell
+# Terminal 1 — FuCinemaTicketSystemApplication
+.\mvnw.cmd spring-boot:run
+
+# Terminal 2 — DesktopLauncher
+.\mvnw.cmd -Pdesktop spring-boot:run
+```
+
+Web mở tại **http://localhost:8080/**. Desktop mở cửa sổ đăng nhập và không khởi động Tomcat. Hai tiến trình phải trỏ cùng SQL Server để thấy dữ liệu của nhau; sau khi thay đổi ở web, làm mới màn hình desktop liên quan.
+
+Trong IntelliJ, dùng JDK 21 và chạy `com.fu.cinema.FuCinemaTicketSystemApplication.main()` cho web hoặc `com.fu.cinema.desktop.DesktopLauncher.main()` cho desktop. Không chạy `CinemaFxApp` trực tiếp. Đóng cửa sổ desktop sẽ đóng Spring context và kết thúc tiến trình desktop.
+
+Đăng nhập bằng ADMIN seed **admin@fucinema.vn / Admin@123**. CUSTOMER và tài khoản LOCKED bị từ chối. Tài khoản seed chỉ có khi `DataSeeder` đã khởi tạo database mới; nếu đã đổi mật khẩu hoặc trạng thái thì dùng thông tin hiện tại trong DB.
+
+Để chạy desktop bằng H2 độc lập, không cần SQL Server:
+
+```powershell
+.\mvnw.cmd -Pdesktop spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=test"
+```
+
+H2 in-memory của hai tiến trình không chia sẻ dữ liệu và mất dữ liệu khi dừng. Không dùng cấu hình này để demo đồng bộ web–desktop hoặc tranh chấp ghế.
+
+### Các chức năng desktop
+
+- Dashboard: KPI, biểu đồ suất theo phòng, làm mới thủ công và mỗi 60 giây.
+- Thể loại và phim: CRUD, tìm kiếm, bộ lọc, phân trang, dialog nhập phim và validation; phim có suất được chuyển STOPPED khi xoá.
+- Phòng và suất chiếu: quản lý phòng, lịch chiếu, giá vé; gợi ý giờ kết thúc và kiểm tra chồng lịch qua service.
+- Bán vé: chọn khách, phim, suất và tối đa 8 ghế; tổng tiền cập nhật theo ghế; chọn “Đã thanh toán” để xác nhận đơn ngay.
+- Đơn đặt vé: tìm/lọc, xem chi tiết, xác nhận hoặc huỷ theo trạng thái.
+- Báo cáo: chọn khoảng ngày, biểu đồ, danh sách đơn CONFIRMED, tổng doanh thu và CSV UTF-8 BOM.
+
+### Kiểm thử desktop
+
+```powershell
+# Bộ test mặc định, gồm các test Facade tích hợp H2
+.\mvnw.cmd clean verify
+
+# Kiểm tra JavaFX trên máy có màn hình; tách JVM vì toolkit không khởi động lại
+.\mvnw.cmd "-Ddesktop.ui.tests=true" "-DreuseForks=false" clean verify
+```
+
+Đã có hơn ba test Facade dùng `@SpringBootTest` và `@ActiveProfiles("test")` (hoặc `test,desktop`), trong các lớp `DesktopAuthFacadeTests`, `GenreFacadeTests`, `MovieFacadeTests`, `ScheduleFacadeTests`, `ReportFacadeTests` và các lớp theo miền khác. Chúng bao phủ đăng nhập/phân quyền, mapping record, CRUD và validation; không cần bổ sung test chỉ để đủ số lượng.
+
+Các test JavaFX có điều kiện sẽ được bỏ qua nếu không bật cờ `desktop.ui.tests`. Test SQL Server cần cấu hình và cờ riêng; không suy ra TC-D01–D20 đều đạt chỉ từ H2 hoặc ảnh trong báo cáo. TC-D16 tranh chấp ghế web–desktop, đối chiếu doanh thu trên SQL Server và mở CSV bằng Excel cần nghiệm thu thực tế trước khi phát hành.
+
+Ngày 10/11/2026, kiểm tra bản mã sạch tại `82d272f` bằng `mvn -o -B -ntp clean verify` trên Windows/JDK 21.0.11: **BUILD SUCCESS**, 63 test được báo cáo, 47 pass và 16 skip, không failure/error. Lượt chạy trong thư mục làm việc có thêm test legacy bị ignore: 263 test, 6 failure, 60 error và 21 skip; lượt này thất bại, không được tính là nghiệm thu thành công. Dùng bản clone sạch để tái hiện bộ test được phát hành; giữ nguyên fixture cũ nếu cần điều tra riêng.
+
+Chạy tiếp trên cùng bản mã sạch với `mvn -o -B -ntp -Ddesktop.ui.tests=true -DreuseForks=false verify`: **BUILD SUCCESS**, 62 test pass, 1 test SQL Server skip, không failure/error. Lượt này gồm kiểm tra JavaFX thực tế: FXML, login/logout, đóng tiến trình, dialog phim, CSV và busy state; không thay thế nghiệm thu toàn bộ luồng trên SQL Server.
+
+Biên bản nền tảng trước khi tích hợp các màn hình thành viên: [desktop-handoff.md](docs/desktop-handoff.md). Đây là lịch sử kiểm tra TODO 33–36, không phải trạng thái hoàn thành của toàn Assignment 2.
+
+### Phân công Assignment 2
+
+| Thành viên | MSSV | Phạm vi |
+|---|---|---|
+| Nguyễn Văn Chương | DE200388 | Leader; I20–I24, TODO 33–36; I34/TODO 46: README, tổng hợp tài liệu và kiểm thử |
+| Trần Hữu Hà | DE201028 | I30–I32, TODO 42–44: SeatMapView, bán vé, đơn |
+| Quyền | DE190908 | I26–I28, TODO 38–40: thể loại, danh sách và dialog phim |
+| Long | DE180871 | I25, I29, I33, TODO 37, 41, 45: dashboard, phòng/suất, báo cáo/CSV |
+
+I20–I34 là mã kế hoạch, không phải số issue GitHub. Đối chiếu PR và review tại [các PR của repository](https://github.com/HSFHuuHaVC/Assignment1/pulls?q=is%3Apr); tác giả không tự approve PR của mình.
+
+### Báo cáo và bàn giao TODO 46
+
+[Báo cáo Assignment 2](Report_Assignment2_HSF302.docx) có nội dung TODO 33–46, phân công và bằng chứng do nhóm cung cấp. Phần TODO 46 trình bày bằng chữ, không thêm ảnh hoặc bảng kết quả kiểm thử theo yêu cầu nhóm.
+
+Phạm vi I34 trong kế hoạch hiện tại không gồm tạo tag/GitHub Release hoặc đổi version. Chưa xác nhận phát hành `v2.0.0`; trước khi phát hành cần hoàn tất nghiệm thu SQL Server, review và merge theo quy trình nhóm. Kiểm tra trạng thái phát hành thực tế tại [GitHub Releases](https://github.com/HSFHuuHaVC/Assignment1/releases).

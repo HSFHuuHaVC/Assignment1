@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.fu.cinema.desktop.controller.MovieDialogController"
+      styleClass="movie-card" spacing="14" prefWidth="560">
+
+    <VBox spacing="4">
+        <Label fx:id="lblDialogTitle" text="Thêm phim mới" styleClass="page-title"/>
+        <Label text="Vui lòng điền đầy đủ các thông tin bắt buộc (*)" styleClass="page-caption"/>
+    </VBox>
+    <Separator/>
+
+    <VBox spacing="10">
+        <VBox spacing="4">
+            <Label text="Tên phim *" styleClass="form-label"/>
+            <TextField fx:id="txtTitle" promptText="Nhập tên phim..."/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="Đạo diễn *" styleClass="form-label"/>
+            <TextField fx:id="txtDirector" promptText="Nhập tên đạo diễn..."/>
+        </VBox>
+
+        <HBox spacing="14">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Thời lượng (30 - 300 phút) *" styleClass="form-label"/>
+                <Spinner fx:id="spnDuration" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Ngày khởi chiếu *" styleClass="form-label"/>
+                <DatePicker fx:id="dpReleaseDate" maxWidth="Infinity"/>
+            </VBox>
+        </HBox>
+
+        <HBox spacing="14">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Độ tuổi *" styleClass="form-label"/>
+                <ComboBox fx:id="cmbAgeRating" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Thể loại *" styleClass="form-label"/>
+                <ComboBox fx:id="cmbGenre" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Trạng thái *" styleClass="form-label"/>
+                <ComboBox fx:id="cmbStatus" maxWidth="Infinity"/>
+            </VBox>
+        </HBox>
+
+        <VBox spacing="4">
+            <Label text="Poster URL *" styleClass="form-label"/>
+            <TextField fx:id="txtPosterUrl" promptText="/images/posters/poster.jpg"/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="Mô tả nội dung *" styleClass="form-label"/>
+            <TextArea fx:id="txtDescription" promptText="Tóm tắt nội dung bộ phim..."
+                      prefRowCount="4" wrapText="true"/>
+        </VBox>
+    </VBox>
+
+</VBox>

@@ -1,0 +1,5 @@
+# Chương owns shared desktop infrastructure. Module reviewers are selected in PRs.
+/pom.xml @chuong123445
+/src/main/java/com/fu/cinema/desktop/ @chuong123445
+/src/main/resources/desktop/ @chuong123445
+/src/main/resources/application-desktop.properties @chuong123445
